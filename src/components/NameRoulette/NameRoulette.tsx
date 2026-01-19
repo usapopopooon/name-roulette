@@ -1,0 +1,270 @@
+import { useCallback, useState } from 'react'
+import { RouletteWheel } from '../RouletteWheel'
+import { NameInput } from '../NameInput'
+import { ResultDisplay } from '../ResultDisplay'
+import { ActionButton } from '../ActionButton'
+import { Checkbox } from '../Checkbox'
+import { ShareButton } from '../ShareButton'
+import { ConfirmDialog } from '../ConfirmDialog'
+import { ContextMenu } from '../ContextMenu'
+import {
+  useRoulette,
+  useNameList,
+  useURLSync,
+  getLastWinnerFromURL,
+} from '../../hooks'
+
+export function NameRoulette() {
+  const {
+    rawNames,
+    nameList,
+    displayNameList,
+    weights,
+    withHonorific,
+    setWithHonorific,
+    handleNamesChange,
+    halveWeight,
+    doubleWeight,
+    excludeName,
+    restoreName,
+    removeName,
+    resetWeights,
+  } = useNameList()
+
+  // 前回の当選者を記録（URLから初期化）
+  const [lastWinner, setLastWinner] = useState<string | null>(() =>
+    getLastWinnerFromURL()
+  )
+  // 「待った」で重みが半分になった人（次の「待った」時に復活させる）
+  const [challengedPerson, setChallengedPerson] = useState<string | null>(null)
+  // 除外確認ダイアログの表示状態
+  const [showExcludeConfirm, setShowExcludeConfirm] = useState(false)
+  // コンテキストメニューの状態
+  const [contextMenu, setContextMenu] = useState<{
+    name: string
+    x: number
+    y: number
+  } | null>(null)
+
+  const {
+    isSpinning,
+    rotation,
+    result,
+    spin,
+    reset,
+    addRotationWithVelocity,
+    setDragging,
+    shiftResult,
+  } = useRoulette()
+
+  const { copyShareLink } = useURLSync({
+    names: rawNames,
+    withHonorific,
+    lastWinner,
+  })
+
+  // スタートボタンのハンドラ
+  const handleStart = useCallback(() => {
+    // 前回の当選者がいて、まだ除外されていない場合は確認ダイアログを表示
+    if (lastWinner) {
+      const baseName = lastWinner.replace(/さん$/, '')
+      const winnerIndex = nameList.indexOf(baseName)
+      // 当選者がまだリストにいて、重みが0でない場合のみ確認
+      if (winnerIndex !== -1 && weights[winnerIndex] > 0) {
+        setShowExcludeConfirm(true)
+        return
+      }
+    }
+    spin(displayNameList, weights)
+  }, [lastWinner, nameList, weights, spin, displayNameList])
+
+  // 除外して開始
+  const handleExcludeAndStart = useCallback(() => {
+    if (lastWinner) {
+      const newWeights = excludeName(lastWinner)
+      setShowExcludeConfirm(false)
+      spin(displayNameList, newWeights)
+    }
+  }, [lastWinner, excludeName, spin, displayNameList])
+
+  // 除外せずに開始
+  const handleStartWithoutExclude = useCallback(() => {
+    setShowExcludeConfirm(false)
+    spin(displayNameList, weights)
+  }, [spin, displayNameList, weights])
+
+  const handleDragStart = useCallback(() => {
+    setDragging(true, displayNameList, weights)
+  }, [setDragging, displayNameList, weights])
+
+  const handleDragEnd = useCallback(() => {
+    setDragging(false, displayNameList, weights)
+  }, [setDragging, displayNameList, weights])
+
+  // 完全リセット（リセットボタン用）
+  const handleFullReset = useCallback(() => {
+    reset()
+    resetWeights()
+    setLastWinner(null)
+    setChallengedPerson(null)
+  }, [reset, resetWeights])
+
+  // 結果画面を閉じる（当選者を記録して次回の確認に使う）
+  const handleCloseResult = useCallback(() => {
+    if (result) {
+      // 前回の除外者がいれば復活させる（前々回以前は除外しない）
+      if (lastWinner) {
+        restoreName(lastWinner)
+      }
+      // 「待った」で半分になった人も復活させる
+      if (challengedPerson) {
+        restoreName(challengedPerson)
+        setChallengedPerson(null)
+      }
+      setLastWinner(result)
+    }
+    reset()
+  }, [result, reset, lastWinner, challengedPerson, restoreName])
+
+  const handleChallenge = useCallback(() => {
+    if (result) {
+      // 前回「待った」された人がいれば復活させる
+      if (challengedPerson && challengedPerson !== result) {
+        restoreName(challengedPerson)
+      }
+      // 当選者の重みを半分にして再抽選（halveWeightは更新後のweightsを返す）
+      const newWeights = halveWeight(result)
+      setChallengedPerson(result)
+      reset()
+      // 少し遅延してから再スピン
+      setTimeout(() => {
+        spin(displayNameList, newWeights)
+      }, 100)
+    }
+  }, [
+    result,
+    halveWeight,
+    reset,
+    spin,
+    displayNameList,
+    challengedPerson,
+    restoreName,
+  ])
+
+  // 当選者を前後にシフト
+  const handleShiftResult = useCallback(
+    (direction: -1 | 1) => {
+      shiftResult(direction, displayNameList, weights)
+    },
+    [shiftResult, displayNameList, weights]
+  )
+
+  // コンテキストメニューを開く
+  const handleRouletteContextMenu = useCallback(
+    (name: string, x: number, y: number) => {
+      if (!isSpinning) {
+        setContextMenu({ name, x, y })
+      }
+    },
+    [isSpinning]
+  )
+
+  // コンテキストメニューを閉じる
+  const handleCloseContextMenu = useCallback(() => {
+    setContextMenu(null)
+  }, [])
+
+  const canStart = nameList.length >= 2 && !isSpinning
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-tertiary p-5 font-['Segoe_UI','Hiragino_Sans',sans-serif] text-white">
+      <h1 className="text-center text-[clamp(1.5rem,5vw,2.5rem)] mb-5 [text-shadow:0_0_20px_rgba(255,200,100,0.5)]">
+        🎯 お名前ルーレット
+      </h1>
+
+      <div className="flex justify-center">
+        <div className="flex gap-4 items-start max-md:flex-col max-md:items-center">
+          <div className="flex flex-col items-center gap-4 max-md:w-full max-md:[&>div:first-child]:!w-80 max-md:[&>div:first-child]:!h-80">
+            <RouletteWheel
+              items={displayNameList}
+              weights={weights}
+              rotation={rotation}
+              size={640}
+              isSpinning={isSpinning}
+              onDragRotate={addRotationWithVelocity}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              onContextMenu={handleRouletteContextMenu}
+            />
+
+            <div className="flex gap-4 flex-wrap justify-center">
+              <ActionButton
+                variant="primary"
+                onClick={handleStart}
+                disabled={!canStart}
+              >
+                {isSpinning ? '回転中...' : 'スタート！'}
+              </ActionButton>
+              <ActionButton variant="secondary" onClick={handleFullReset}>
+                リセット
+              </ActionButton>
+            </div>
+          </div>
+
+          <div className="w-70 shrink-0 max-md:w-full">
+            <NameInput
+              value={rawNames}
+              onChange={handleNamesChange}
+              disabled={isSpinning}
+              count={nameList.length}
+            />
+
+            <Checkbox
+              label="名前に「さん」をつける"
+              checked={withHonorific}
+              onChange={setWithHonorific}
+              disabled={isSpinning}
+            />
+
+            <ShareButton onCopy={copyShareLink} />
+          </div>
+        </div>
+      </div>
+
+      <ResultDisplay
+        result={result}
+        candidates={displayNameList}
+        onClose={handleCloseResult}
+        onChallenge={handleChallenge}
+        onShift={handleShiftResult}
+      />
+
+      {showExcludeConfirm && lastWinner && (
+        <ConfirmDialog
+          message={`前回の当選者「${lastWinner}」を\n除外しますか？`}
+          onYes={handleExcludeAndStart}
+          onNo={handleStartWithoutExclude}
+        />
+      )}
+
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          items={[
+            {
+              label: `「${contextMenu.name}」の確率を倍にする`,
+              onClick: () => doubleWeight(contextMenu.name),
+            },
+            {
+              label: `「${contextMenu.name}」を削除`,
+              onClick: () => removeName(contextMenu.name),
+              danger: true,
+            },
+          ]}
+          onClose={handleCloseContextMenu}
+        />
+      )}
+    </div>
+  )
+}

@@ -1,0 +1,102 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>OG Image Generator</title>
+  </head>
+  <body>
+    <canvas id="canvas" width="1200" height="630"></canvas>
+    <br />
+    <a id="download" download="og-image.png">Download PNG</a>
+    <script>
+      const canvas = document.getElementById('canvas')
+      const ctx = canvas.getContext('2d')
+      const width = 1200
+      const height = 630
+
+      // Background gradient
+      const bgGradient = ctx.createLinearGradient(0, 0, width, height)
+      bgGradient.addColorStop(0, '#1a1a2e')
+      bgGradient.addColorStop(0.5, '#16213e')
+      bgGradient.addColorStop(1, '#0f3460')
+      ctx.fillStyle = bgGradient
+      ctx.fillRect(0, 0, width, height)
+
+      // Draw roulette wheel
+      const wheelX = 300
+      const wheelY = 315
+      const wheelRadius = 180
+      const colors = [
+        '#E53935',
+        '#1E88E5',
+        '#43A047',
+        '#8E24AA',
+        '#FB8C00',
+        '#00ACC1',
+      ]
+
+      for (let i = 0; i < 6; i++) {
+        const startAngle = (i * Math.PI) / 3 - Math.PI / 2
+        const endAngle = ((i + 1) * Math.PI) / 3 - Math.PI / 2
+        ctx.beginPath()
+        ctx.moveTo(wheelX, wheelY)
+        ctx.arc(wheelX, wheelY, wheelRadius, startAngle, endAngle)
+        ctx.closePath()
+        ctx.fillStyle = colors[i]
+        ctx.fill()
+        ctx.strokeStyle = '#fff'
+        ctx.lineWidth = 2
+        ctx.stroke()
+      }
+
+      // Center circle (dark)
+      ctx.beginPath()
+      ctx.arc(wheelX, wheelY, 30, 0, Math.PI * 2)
+      ctx.fillStyle = '#1a1a2e'
+      ctx.fill()
+      ctx.strokeStyle = '#ffd700'
+      ctx.lineWidth = 4
+      ctx.stroke()
+
+      // Center circle (gold)
+      ctx.beginPath()
+      ctx.arc(wheelX, wheelY, 18, 0, Math.PI * 2)
+      ctx.fillStyle = '#ffd700'
+      ctx.fill()
+
+      // Pointer
+      ctx.beginPath()
+      ctx.moveTo(wheelX, wheelY - wheelRadius - 20)
+      ctx.lineTo(wheelX - 15, wheelY - wheelRadius - 50)
+      ctx.lineTo(wheelX + 15, wheelY - wheelRadius - 50)
+      ctx.closePath()
+      ctx.fillStyle = '#ffd700'
+      ctx.fill()
+      ctx.strokeStyle = '#fff'
+      ctx.lineWidth = 2
+      ctx.stroke()
+
+      // Title
+      ctx.font = 'bold 72px "Hiragino Sans", "Segoe UI", sans-serif'
+      ctx.fillStyle = '#ffffff'
+      ctx.textAlign = 'center'
+      ctx.shadowColor = 'rgba(255, 200, 100, 0.5)'
+      ctx.shadowBlur = 20
+      ctx.fillText('🎯 お名前ルーレット', 756, 250)
+
+      // Subtitle
+      ctx.shadowBlur = 0
+      ctx.font = '32px "Hiragino Sans", "Segoe UI", sans-serif'
+      ctx.fillStyle = '#ffffff'
+      ctx.fillText('ランダムに名前を選ぶルーレットアプリ', 800, 350)
+
+      // Features
+      ctx.font = '24px "Hiragino Sans", "Segoe UI", sans-serif'
+      ctx.fillStyle = '#ffffff'
+      ctx.fillText('🔗 URLで名前を保存して共有！', 790, 420)
+
+      // Download link
+      document.getElementById('download').href = canvas.toDataURL('image/png')
+    </script>
+  </body>
+</html>

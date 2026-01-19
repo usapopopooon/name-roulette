@@ -1,0 +1,28 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "vitest",
+    "vite",
+    "vitejs",
+    "tseslint",
+    "jsdom",
+    "noreferrer",
+    "clsx",
+    "autodocs",
+    "checkmark",
+    "tailwindcss",
+    "lucide",
+    "twmerge",
+    "unstub"
+  ],
+  "ignorePaths": [
+    "node_modules",
+    "dist",
+    "coverage",
+    "storybook-static",
+    "package-lock.json",
+    "*.svg",
+    "*.tsbuildinfo"
+  ]
+}
