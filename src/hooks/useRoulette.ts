@@ -166,10 +166,10 @@ export function useRoulette(
       let duration: number
 
       if (spinOptions?.nudge) {
-        // ちょっとだけ回す（動物乱入後用）- 1〜2回転 + 30〜150度
-        totalSpins = 1 + Math.random()
+        // ちょっとだけ回す（動物乱入後用）- ゆっくり回転
+        totalSpins = 0.5 + Math.random() * 0.5 // 0.5〜1回転
         extraRotation = 30 + Math.random() * 120
-        duration = 2000 + Math.random() * 1000 // 2〜3秒
+        duration = 2500 + Math.random() * 1000 // 2.5〜3.5秒
       } else {
         // 通常のスピン
         totalSpins = 5 + Math.random() * 3
