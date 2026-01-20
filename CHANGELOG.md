@@ -48,7 +48,7 @@
 - Tailwind CSS v4
 - Radix UI（アクセシブルなチェックボックス）
 - class-variance-authority（コンポーネントバリアント）
-- Vitest + Testing Library（100テスト）
+- Vitest + Testing Library（110テスト）
 - ESLint + Prettier + cspell
 - GitHub Actions CI/CD
 - GitHub Pages デプロイ

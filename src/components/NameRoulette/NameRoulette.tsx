@@ -187,6 +187,8 @@ export function NameRoulette() {
       const newWeights = halveWeight(result)
       setChallengedPerson(result)
       setShowChallengeConfirm(false)
+      // 動物乱入の確率をリセット
+      setInterruptionOccurred(false)
       reset()
       // 少し遅延してから再スピン
       setTimeout(() => {
@@ -206,6 +208,8 @@ export function NameRoulette() {
   // 「待った」確認で「いいえ」を選んだ時（確率変更なしで再抽選）
   const handleChallengeCancel = useCallback(() => {
     setShowChallengeConfirm(false)
+    // 動物乱入の確率をリセット
+    setInterruptionOccurred(false)
     reset()
     // 少し遅延してから再スピン
     setTimeout(() => {

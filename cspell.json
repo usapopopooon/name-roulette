@@ -14,7 +14,9 @@
     "tailwindcss",
     "lucide",
     "twmerge",
-    "unstub"
+    "unstub",
+    "Kosugi",
+    "Maru"
   ],
   "ignorePaths": [
     "node_modules",
