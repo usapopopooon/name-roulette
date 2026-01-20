@@ -107,10 +107,12 @@ export function useRoulette(
         const elapsed = timestamp - startTime
         const progress = Math.min(elapsed / duration, 1)
 
-        // ease-out-expo: 終盤がゆっくりになる滑らかなイージング
-        const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress)
+        // ease-out-quint: 終盤が滑らかに1に収束するイージング
+        // 1 - (1 - progress)^5 で progress=1 の時に正確に 1 になる
+        const eased = 1 - Math.pow(1 - progress, 5)
 
         const currentRotation = startRotation + totalRotation * eased
+
         setRotation(currentRotation)
 
         if (progress < 1) {
@@ -161,12 +163,11 @@ export function useRoulette(
         const elapsed = timestamp - startTime
         const progress = Math.min(elapsed / duration, 1)
 
-        // ease-out-expo: 終盤がゆっくりになる滑らかなイージング
-        // 1 - 2^(-10 * progress) で指数関数的に減速
-        const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress)
+        // ease-out-quint: 終盤が滑らかに1に収束するイージング
+        // 1 - (1 - progress)^5 で progress=1 の時に正確に 1 になる
+        const eased = 1 - Math.pow(1 - progress, 5)
 
-        const currentRotation =
-          startRotation + (finalRotation - startRotation) * eased
+        const currentRotation = startRotation + (finalRotation - startRotation) * eased
 
         setRotation(currentRotation)
 
