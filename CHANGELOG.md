@@ -5,6 +5,13 @@
 フォーマットは [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に基づいており、
 [Semantic Versioning](https://semver.org/lang/ja/) に準拠しています。
 
+## [0.0.2] - 2026-01-20
+
+### 修正
+
+- ルーレット当選者判定のバグを修正（矢印が指すセグメントと当選者が一致しない問題）
+- アニメーション終了時のイージング関数を修正（ease-out-expo → ease-out-quint）して約2度のジャンプを解消
+
 ## [0.0.1] - 2026-01-20
 
 ### 追加

@@ -70,6 +70,7 @@ export function useRoulette(
       setResult(winner)
       onComplete?.(winner)
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- rotationは意図的に除外（finalRotationを優先使用するため）
     [onComplete]
   )
 
@@ -128,7 +129,11 @@ export function useRoulette(
               const pendingWeights = pendingWeightsRef.current
               pendingItemsRef.current = null
               pendingWeightsRef.current = null
-              determineWinner(pendingItems, pendingWeights || undefined, finalRotation)
+              determineWinner(
+                pendingItems,
+                pendingWeights || undefined,
+                finalRotation
+              )
             } else {
               determineWinner(items, weights, finalRotation)
             }
@@ -167,7 +172,8 @@ export function useRoulette(
         // 1 - (1 - progress)^5 で progress=1 の時に正確に 1 になる
         const eased = 1 - Math.pow(1 - progress, 5)
 
-        const currentRotation = startRotation + (finalRotation - startRotation) * eased
+        const currentRotation =
+          startRotation + (finalRotation - startRotation) * eased
 
         setRotation(currentRotation)
 
