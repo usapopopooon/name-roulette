@@ -38,8 +38,9 @@ export function useRoulette(
   const recentDeltasRef = useRef<{ delta: number; time: number }[]>([])
 
   // 重みを考慮して勝者を決定
+  // finalRotationを直接受け取ることで、クロージャの古い値問題を回避
   const determineWinner = useCallback(
-    (items: string[], weights?: number[]) => {
+    (items: string[], weights?: number[], finalRotation?: number) => {
       if (items.length < 2) return
 
       setIsSpinning(false)
@@ -49,15 +50,17 @@ export function useRoulette(
       const totalWeight = w.reduce((sum, weight) => sum + weight, 0)
       const segmentAngles = w.map((weight) => (weight / totalWeight) * 360)
 
-      // 回転角度を0-360に正規化（ポインターは上部=-90度）
-      const normalizedRotation = ((-rotation % 360) + 360) % 360
+      // finalRotationが渡された場合はそれを使用（アニメーション終了時の正確な値）
+      // セグメントは-90度から描画開始されているため、ここでは-90オフセット不要
+      const rotationToUse = finalRotation ?? rotation
+      const pointerAngle = (-rotationToUse + 360 * 1000) % 360
 
       // どのセグメントがポインターの下にあるか
       let accumulatedAngle = 0
       let winnerIndex = 0
       for (let i = 0; i < segmentAngles.length; i++) {
         accumulatedAngle += segmentAngles[i]
-        if (normalizedRotation < accumulatedAngle) {
+        if (pointerAngle < accumulatedAngle) {
           winnerIndex = i
           break
         }
@@ -67,7 +70,7 @@ export function useRoulette(
       setResult(winner)
       onComplete?.(winner)
     },
-    [rotation, onComplete]
+    [onComplete]
   )
 
   // 慣性アニメーション - 最後がじわじわゆっくりになる
@@ -114,6 +117,8 @@ export function useRoulette(
           animationRef.current = requestAnimationFrame(animate)
         } else {
           animationRef.current = null
+          // 最終回転角度を計算
+          const finalRotation = startRotation + totalRotation
           // ドラッグ中でなければ勝者決定
           if (!isDraggingRef.current) {
             if (pendingItemsRef.current) {
@@ -121,9 +126,9 @@ export function useRoulette(
               const pendingWeights = pendingWeightsRef.current
               pendingItemsRef.current = null
               pendingWeightsRef.current = null
-              determineWinner(pendingItems, pendingWeights || undefined)
+              determineWinner(pendingItems, pendingWeights || undefined, finalRotation)
             } else {
-              determineWinner(items, weights)
+              determineWinner(items, weights, finalRotation)
             }
           }
         }
@@ -173,7 +178,8 @@ export function useRoulette(
             pendingItemsRef.current = items
             pendingWeightsRef.current = weights || null
           } else {
-            determineWinner(items, weights)
+            // 最終回転角度を直接渡す
+            determineWinner(items, weights, finalRotation)
           }
         }
       }
