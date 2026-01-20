@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { RouletteWheel } from '../RouletteWheel'
 import { NameInput } from '../NameInput'
 import { ResultDisplay } from '../ResultDisplay'
@@ -7,6 +7,10 @@ import { Checkbox } from '../Checkbox'
 import { ShareButton } from '../ShareButton'
 import { ConfirmDialog } from '../ConfirmDialog'
 import { ContextMenu } from '../ContextMenu'
+import {
+  CatInterruptionOverlay,
+  type InterruptionType,
+} from '../CatInterruptionOverlay'
 import {
   useRoulette,
   useNameList,
@@ -39,12 +43,21 @@ export function NameRoulette() {
   const [challengedPerson, setChallengedPerson] = useState<string | null>(null)
   // 除外確認ダイアログの表示状態
   const [showExcludeConfirm, setShowExcludeConfirm] = useState(false)
+  // 「待った」確認ダイアログの表示状態
+  const [showChallengeConfirm, setShowChallengeConfirm] = useState(false)
   // コンテキストメニューの状態
   const [contextMenu, setContextMenu] = useState<{
     name: string
     x: number
     y: number
   } | null>(null)
+  // 乱入演出の状態（null = なし、'cat' or 'duck' = 乱入中）
+  const [interruptionType, setInterruptionType] =
+    useState<InterruptionType | null>(null)
+  // 乱入判定済みフラグ（同じ結果で複数回判定しないため）
+  const [interruptionChecked, setInterruptionChecked] = useState(false)
+  // 乱入が一度発生したフラグ（連続で発生しないように）
+  const [interruptionOccurred, setInterruptionOccurred] = useState(false)
 
   const {
     isSpinning,
@@ -63,10 +76,38 @@ export function NameRoulette() {
     lastWinner,
   })
 
+  // 結果が出たら60%の確率で乱入（猫30%、アヒル30%）（一度発生したら連続で発生しない）
+  useEffect(() => {
+    if (result && !isSpinning && !interruptionChecked) {
+      setInterruptionChecked(true)
+      if (!interruptionOccurred && Math.random() < 0.6) {
+        // 猫とアヒルを50%ずつ
+        const type: InterruptionType = Math.random() < 0.5 ? 'cat' : 'duck'
+        setInterruptionType(type)
+        setInterruptionOccurred(true)
+      }
+    }
+    // 結果がリセットされたらフラグもリセット
+    if (!result) {
+      setInterruptionChecked(false)
+    }
+  }, [result, isSpinning, interruptionChecked, interruptionOccurred])
+
+  // 乱入演出完了後の処理
+  const handleInterruptionComplete = useCallback(() => {
+    setInterruptionType(null)
+    reset()
+    // 少し遅延してから再スピン（ちょっとだけ回す）
+    setTimeout(() => {
+      spin(displayNameList, weights, { nudge: true })
+    }, 100)
+  }, [reset, spin, displayNameList, weights])
+
   // スタートボタンのハンドラ
   const handleStart = useCallback(() => {
     // 前回の当選者がいて、まだ除外されていない場合は確認ダイアログを表示
-    if (lastWinner) {
+    // ただし、除外すると2人未満になる場合は確認しない
+    if (lastWinner && displayNameList.length >= 3) {
       const baseName = lastWinner.replace(/さん$/, '')
       const winnerIndex = nameList.indexOf(baseName)
       // 当選者がまだリストにいて、重みが0でない場合のみ確認
@@ -123,10 +164,20 @@ export function NameRoulette() {
       }
       setLastWinner(result)
     }
+    // 次のターンでは乱入の出現確率をリセット
+    setInterruptionOccurred(false)
     reset()
   }, [result, reset, lastWinner, challengedPerson, restoreName])
 
+  // 「待った」ボタンを押した時（確認ダイアログを表示）
   const handleChallenge = useCallback(() => {
+    if (result) {
+      setShowChallengeConfirm(true)
+    }
+  }, [result])
+
+  // 「待った」確認で「はい」を選んだ時
+  const handleChallengeConfirm = useCallback(() => {
     if (result) {
       // 前回「待った」された人がいれば復活させる
       if (challengedPerson && challengedPerson !== result) {
@@ -135,6 +186,7 @@ export function NameRoulette() {
       // 当選者の重みを半分にして再抽選（halveWeightは更新後のweightsを返す）
       const newWeights = halveWeight(result)
       setChallengedPerson(result)
+      setShowChallengeConfirm(false)
       reset()
       // 少し遅延してから再スピン
       setTimeout(() => {
@@ -150,6 +202,16 @@ export function NameRoulette() {
     challengedPerson,
     restoreName,
   ])
+
+  // 「待った」確認で「いいえ」を選んだ時（確率変更なしで再抽選）
+  const handleChallengeCancel = useCallback(() => {
+    setShowChallengeConfirm(false)
+    reset()
+    // 少し遅延してから再スピン
+    setTimeout(() => {
+      spin(displayNameList, weights)
+    }, 100)
+  }, [reset, spin, displayNameList, weights])
 
   // 当選者を前後にシフト
   const handleShiftResult = useCallback(
@@ -231,12 +293,21 @@ export function NameRoulette() {
         </div>
       </div>
 
-      <ResultDisplay
-        result={result}
-        candidates={displayNameList}
-        onClose={handleCloseResult}
-        onChallenge={handleChallenge}
-        onShift={handleShiftResult}
+      {/* 乱入判定が完了し、乱入でない場合のみ結果を表示（乱入時はファンファーレを鳴らさない） */}
+      {interruptionChecked && !interruptionType && (
+        <ResultDisplay
+          result={result}
+          candidates={displayNameList}
+          onClose={handleCloseResult}
+          onChallenge={handleChallenge}
+          onShift={handleShiftResult}
+        />
+      )}
+
+      <CatInterruptionOverlay
+        show={!!interruptionType}
+        type={interruptionType ?? undefined}
+        onComplete={handleInterruptionComplete}
       />
 
       {showExcludeConfirm && lastWinner && (
@@ -244,6 +315,14 @@ export function NameRoulette() {
           message={`前回の当選者「${lastWinner}」を\n除外しますか？`}
           onYes={handleExcludeAndStart}
           onNo={handleStartWithoutExclude}
+        />
+      )}
+
+      {showChallengeConfirm && result && (
+        <ConfirmDialog
+          message={`「${result}」の当選確率を\n下げますか？`}
+          onYes={handleChallengeConfirm}
+          onNo={handleChallengeCancel}
         />
       )}
 

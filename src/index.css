@@ -93,4 +93,32 @@
       transform: scale(4);
     }
   }
+
+  @keyframes cat-walk {
+    0% {
+      right: -150px;
+    }
+    100% {
+      right: calc(100% + 150px);
+    }
+  }
+
+  @keyframes cat-waddle {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    25% {
+      transform: translateY(-8px) rotate(-5deg);
+    }
+    50% {
+      transform: translateY(0) rotate(0deg);
+    }
+    75% {
+      transform: translateY(-8px) rotate(5deg);
+    }
+  }
+
+  --animate-cat-walk: cat-walk 2.5s linear forwards;
+  --animate-cat-waddle: cat-waddle 0.3s ease-in-out infinite;
 }

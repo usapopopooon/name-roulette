@@ -4,11 +4,16 @@ export interface UseRouletteOptions {
   onComplete?: (winner: string) => void
 }
 
+export interface SpinOptions {
+  /** ちょっとだけ回す（動物乱入後用） */
+  nudge?: boolean
+}
+
 export interface UseRouletteReturn {
   isSpinning: boolean
   rotation: number
   result: string | null
-  spin: (items: string[], weights?: number[]) => void
+  spin: (items: string[], weights?: number[], options?: SpinOptions) => void
   reset: () => void
   addRotationWithVelocity: (delta: number, timestamp: number) => void
   setDragging: (dragging: boolean, items: string[], weights?: number[]) => void
@@ -147,7 +152,7 @@ export function useRoulette(
   )
 
   const spin = useCallback(
-    (items: string[], weights?: number[]) => {
+    (items: string[], weights?: number[], spinOptions?: SpinOptions) => {
       if (items.length < 2 || isSpinning) return
 
       setIsSpinning(true)
@@ -155,13 +160,26 @@ export function useRoulette(
       pendingItemsRef.current = null
       pendingWeightsRef.current = null
 
-      const totalSpins = 5 + Math.random() * 3
       const startRotation = rotation
-      const finalRotation =
-        startRotation + totalSpins * 360 + Math.random() * 360
+      let totalSpins: number
+      let extraRotation: number
+      let duration: number
+
+      if (spinOptions?.nudge) {
+        // ちょっとだけ回す（動物乱入後用）- 1〜2回転 + 30〜150度
+        totalSpins = 1 + Math.random()
+        extraRotation = 30 + Math.random() * 120
+        duration = 2000 + Math.random() * 1000 // 2〜3秒
+      } else {
+        // 通常のスピン
+        totalSpins = 5 + Math.random() * 3
+        extraRotation = Math.random() * 360
+        duration = 6000 + Math.random() * 2000 // 6〜8秒
+      }
+
+      const finalRotation = startRotation + totalSpins * 360 + extraRotation
 
       let startTime: number | null = null
-      const duration = 6000 + Math.random() * 2000 // より長い時間（6〜8秒）
 
       const animate = (timestamp: number) => {
         if (!startTime) startTime = timestamp
