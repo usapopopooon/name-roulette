@@ -42,25 +42,29 @@ export const CatInterruptionOverlay = memo(function CatInterruptionOverlay({
   return (
     <div className="fixed inset-0 z-50 pointer-events-none overflow-hidden">
       {/* 通過中テキスト */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 text-5xl text-white font-bold animate-bounce [text-shadow:0_4px_8px_rgba(0,0,0,0.9),0_0_20px_rgba(255,255,255,0.5)] font-['Comic_Sans_MS','Kosugi_Maru',cursive]">
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white font-bold animate-bounce [text-shadow:0_4px_8px_rgba(0,0,0,0.9),0_0_20px_rgba(255,255,255,0.5)] font-['Comic_Sans_MS','Kosugi_Maru',cursive] whitespace-nowrap [font-size:clamp(1.5rem,8vw,3rem)]">
         {config.text}
       </div>
       {/* 右から左へてくてく歩く */}
-      <div className="absolute top-1/2 -translate-y-1/2 animate-cat-walk">
+      <div className="absolute top-[40%] -translate-y-1/2 animate-cat-walk">
         {type === 'cat' ? (
-          <div className="text-[8rem] animate-cat-waddle">🐈</div>
+          <div className="[font-size:clamp(4rem,20vw,8rem)] animate-cat-waddle">
+            🐈
+          </div>
         ) : (
-          <div className="flex items-end gap-2">
+          <div className="flex items-end gap-[0.5vw]">
             {/* 親アヒル */}
-            <div className="text-[8rem] animate-cat-waddle">🦆</div>
+            <div className="[font-size:clamp(4rem,20vw,8rem)] animate-cat-waddle">
+              🦆
+            </div>
             {/* 子アヒル3匹 */}
-            <div className="text-[4rem] animate-cat-waddle [animation-delay:0.1s]">
+            <div className="[font-size:clamp(2rem,10vw,4rem)] animate-cat-waddle [animation-delay:0.1s]">
               🦆
             </div>
-            <div className="text-[4rem] animate-cat-waddle [animation-delay:0.2s]">
+            <div className="[font-size:clamp(2rem,10vw,4rem)] animate-cat-waddle [animation-delay:0.2s]">
               🦆
             </div>
-            <div className="text-[4rem] animate-cat-waddle [animation-delay:0.3s]">
+            <div className="[font-size:clamp(2rem,10vw,4rem)] animate-cat-waddle [animation-delay:0.3s]">
               🦆
             </div>
           </div>
