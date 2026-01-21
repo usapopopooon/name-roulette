@@ -5,6 +5,12 @@
 フォーマットは [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に基づいており、
 [Semantic Versioning](https://semver.org/lang/ja/) に準拠しています。
 
+## [0.0.4] - 2026-01-21
+
+### 改善
+
+- 動物乱入演出をレスポンシブ対応（テキストと動物のサイズを画面幅に応じて調整）
+
 ## [0.0.3] - 2026-01-20
 
 ### 追加
