@@ -45,4 +45,51 @@ describe('NameInput', () => {
     const textarea = screen.getByPlaceholderText(/名前を入力/)
     expect(textarea).toBeInTheDocument()
   })
+
+  it('should render shuffle button when onShuffle is provided', () => {
+    render(
+      <NameInput value="田中\n佐藤" onChange={() => {}} onShuffle={() => {}} count={2} />
+    )
+
+    expect(screen.getByText('🔀 シャッフル')).toBeInTheDocument()
+  })
+
+  it('should not render shuffle button when onShuffle is not provided', () => {
+    render(<NameInput value="田中\n佐藤" onChange={() => {}} count={2} />)
+
+    expect(screen.queryByText('🔀 シャッフル')).not.toBeInTheDocument()
+  })
+
+  it('should call onShuffle when shuffle button is clicked', () => {
+    const onShuffle = vi.fn()
+    render(
+      <NameInput value="田中\n佐藤" onChange={() => {}} onShuffle={onShuffle} count={2} />
+    )
+
+    fireEvent.click(screen.getByText('🔀 シャッフル'))
+
+    expect(onShuffle).toHaveBeenCalledOnce()
+  })
+
+  it('should disable shuffle button when count is less than 2', () => {
+    render(
+      <NameInput value="田中" onChange={() => {}} onShuffle={() => {}} count={1} />
+    )
+
+    expect(screen.getByText('🔀 シャッフル')).toBeDisabled()
+  })
+
+  it('should disable shuffle button when disabled', () => {
+    render(
+      <NameInput
+        value="田中\n佐藤"
+        onChange={() => {}}
+        onShuffle={() => {}}
+        count={2}
+        disabled
+      />
+    )
+
+    expect(screen.getByText('🔀 シャッフル')).toBeDisabled()
+  })
 })

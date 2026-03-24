@@ -240,6 +240,17 @@ export function NameRoulette() {
     setContextMenu(null)
   }, [])
 
+  // 名前リストをシャッフル
+  const handleShuffle = useCallback(() => {
+    const lines = rawNames.split('\n').filter((line) => line.trim() !== '')
+    // Fisher-Yates shuffle
+    for (let i = lines.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[lines[i], lines[j]] = [lines[j], lines[i]]
+    }
+    handleNamesChange(lines.join('\n'))
+  }, [rawNames, handleNamesChange])
+
   const canStart = nameList.length >= 2 && !isSpinning
 
   return (
@@ -281,6 +292,7 @@ export function NameRoulette() {
             <NameInput
               value={rawNames}
               onChange={handleNamesChange}
+              onShuffle={handleShuffle}
               disabled={isSpinning}
               count={nameList.length}
             />

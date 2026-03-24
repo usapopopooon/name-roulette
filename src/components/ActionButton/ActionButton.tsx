@@ -3,7 +3,7 @@ import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'px-8 py-3 text-lg font-bold border-none rounded-full cursor-pointer transition-all duration-300 ease-in-out',
+  'font-bold border-none rounded-full cursor-pointer transition-all duration-300 ease-in-out',
   {
     variants: {
       variant: {
@@ -16,6 +16,14 @@ const buttonVariants = cva(
           'bg-white/10 text-gray-400 border-2 border-gray-600',
           'hover:enabled:bg-white/15 hover:enabled:border-gray-500',
         ],
+        accent: [
+          'bg-emerald-900/50 text-emerald-200 border-2 border-emerald-800',
+          'hover:enabled:bg-emerald-800/50 hover:enabled:border-emerald-700',
+        ],
+      },
+      size: {
+        default: 'px-8 py-3 text-lg',
+        sm: 'px-3 py-1 text-xs',
       },
       isDisabled: {
         true: 'opacity-50 cursor-not-allowed',
@@ -23,16 +31,19 @@ const buttonVariants = cva(
     },
     defaultVariants: {
       variant: 'primary',
+      size: 'default',
     },
   }
 )
 
 export interface ActionButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary'
+  variant?: 'primary' | 'secondary' | 'accent'
+  size?: 'default' | 'sm'
 }
 
 export const ActionButton = memo(function ActionButton({
   variant = 'primary',
+  size = 'default',
   disabled,
   children,
   className,
@@ -41,7 +52,7 @@ export const ActionButton = memo(function ActionButton({
   return (
     <button
       className={cn(
-        buttonVariants({ variant, isDisabled: !!disabled }),
+        buttonVariants({ variant, size, isDisabled: !!disabled }),
         className
       )}
       disabled={disabled}

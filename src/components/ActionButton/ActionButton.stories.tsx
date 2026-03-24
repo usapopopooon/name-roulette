@@ -52,3 +52,20 @@ export const SecondaryDisabled: Story = {
     disabled: true,
   },
 }
+
+export const SmallSecondary: Story = {
+  args: {
+    children: '🔀 シャッフル',
+    variant: 'secondary',
+    size: 'sm',
+  },
+}
+
+export const SmallSecondaryDisabled: Story = {
+  args: {
+    children: '🔀 シャッフル',
+    variant: 'secondary',
+    size: 'sm',
+    disabled: true,
+  },
+}
