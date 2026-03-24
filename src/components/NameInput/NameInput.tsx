@@ -1,4 +1,4 @@
-import { memo, ChangeEvent } from 'react'
+import { ChangeEvent } from 'react'
 import { cn } from '@/lib/utils'
 import { ActionButton } from '../ActionButton'
 
@@ -10,7 +10,7 @@ export interface NameInputProps {
   count: number
 }
 
-export const NameInput = memo(function NameInput({
+export function NameInput({
   value,
   onChange,
   onShuffle,
@@ -24,9 +24,7 @@ export const NameInput = memo(function NameInput({
   return (
     <div className="w-full">
       <div className="mb-2.5 flex items-center justify-between">
-        <label className="text-base text-gray-400">
-          参加者（改行区切り）
-        </label>
+        <label className="text-base text-gray-400">参加者（改行区切り）</label>
         {onShuffle && (
           <ActionButton
             variant="accent"
@@ -56,4 +54,4 @@ export const NameInput = memo(function NameInput({
       </div>
     </div>
   )
-})
+}

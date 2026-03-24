@@ -1,16 +1,10 @@
-import { memo } from 'react'
-
 export interface ConfirmDialogProps {
   message: string
   onYes: () => void
   onNo: () => void
 }
 
-export const ConfirmDialog = memo(function ConfirmDialog({
-  message,
-  onYes,
-  onNo,
-}: ConfirmDialogProps) {
+export function ConfirmDialog({ message, onYes, onNo }: ConfirmDialogProps) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in"
@@ -40,4 +34,4 @@ export const ConfirmDialog = memo(function ConfirmDialog({
       </div>
     </div>
   )
-})
+}

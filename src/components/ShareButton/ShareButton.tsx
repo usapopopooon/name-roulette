@@ -1,22 +1,20 @@
-import { memo, useState, useCallback } from 'react'
+import { useState } from 'react'
 import { cn } from '@/lib/utils'
 
 export interface ShareButtonProps {
   onCopy: () => Promise<boolean>
 }
 
-export const ShareButton = memo(function ShareButton({
-  onCopy,
-}: ShareButtonProps) {
+export function ShareButton({ onCopy }: ShareButtonProps) {
   const [copied, setCopied] = useState(false)
 
-  const handleClick = useCallback(async () => {
+  const handleClick = async () => {
     const success = await onCopy()
     if (success) {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     }
-  }, [onCopy])
+  }
 
   return (
     <div className="mt-5 p-4 bg-white/[0.03] rounded-xl border border-gray-700">
@@ -39,4 +37,4 @@ export const ShareButton = memo(function ShareButton({
       </p>
     </div>
   )
-})
+}

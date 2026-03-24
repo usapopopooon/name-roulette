@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react'
+import { useMemo } from 'react'
 
 const COLORS = [
   '#ff0000',
@@ -28,7 +28,7 @@ interface Firework {
   delay: number
 }
 
-export const Fireworks = memo(function Fireworks() {
+export function Fireworks() {
   const fireworks = useMemo<Firework[]>(() => {
     // 8つの花火を異なる位置・タイミングで配置
     return Array.from({ length: 8 }, (_, i) => {
@@ -109,4 +109,4 @@ export const Fireworks = memo(function Fireworks() {
       ))}
     </div>
   )
-})
+}

@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 export interface ContextMenuItem {
   label: string
@@ -13,12 +13,7 @@ export interface ContextMenuProps {
   onClose: () => void
 }
 
-export const ContextMenu = memo(function ContextMenu({
-  x,
-  y,
-  items,
-  onClose,
-}: ContextMenuProps) {
+export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -71,4 +66,4 @@ export const ContextMenu = memo(function ContextMenu({
       ))}
     </div>
   )
-})
+}

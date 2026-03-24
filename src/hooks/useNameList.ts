@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 
 export interface UseNameListOptions {
   initialNames?: string
@@ -107,29 +107,22 @@ export function useNameList(
     }
   }, [withHonorific])
 
-  const handleNamesChange = useCallback(
-    (newValue: string) => {
-      if (withHonorific) {
-        const lines = newValue.split('\n')
-        const processedLines = lines.map((line, index) => {
-          if (
-            index < lines.length - 1 &&
-            line.trim() &&
-            !line.endsWith('さん')
-          ) {
-            return line + 'さん'
-          }
-          return line
-        })
-        newValue = processedLines.join('\n')
-      }
-      setRawNames(newValue)
-    },
-    [withHonorific]
-  )
+  const handleNamesChange = (newValue: string) => {
+    if (withHonorific) {
+      const lines = newValue.split('\n')
+      const processedLines = lines.map((line, index) => {
+        if (index < lines.length - 1 && line.trim() && !line.endsWith('さん')) {
+          return line + 'さん'
+        }
+        return line
+      })
+      newValue = processedLines.join('\n')
+    }
+    setRawNames(newValue)
+  }
 
   // 特定の名前の重みを半分にして、更新後のweightsを返す
-  const halveWeight = useCallback((name: string): number[] => {
+  const halveWeight = (name: string): number[] => {
     // 「さん」付きで渡された場合は除去
     const baseName = name.replace(/さん$/, '')
     // refから最新の値を取得
@@ -143,10 +136,10 @@ export function useNameList(
     setWeightMap(newWeightMap)
     // 更新後のweightsを返す
     return currentNameList.map((n) => newWeightMap[n] ?? 1)
-  }, [])
+  }
 
   // 特定の名前の重みを倍にする
-  const doubleWeight = useCallback((name: string): void => {
+  const doubleWeight = (name: string): void => {
     // 「さん」付きで渡された場合は除去
     const baseName = name.replace(/さん$/, '')
     const currentWeightMap = weightMapRef.current
@@ -155,10 +148,10 @@ export function useNameList(
       ...prev,
       [baseName]: newWeight,
     }))
-  }, [])
+  }
 
   // 特定の名前を除外（重みを0にする）して、更新後のweightsを返す
-  const excludeName = useCallback((name: string): number[] => {
+  const excludeName = (name: string): number[] => {
     // 「さん」付きで渡された場合は除去
     const baseName = name.replace(/さん$/, '')
     // refから最新の値を取得
@@ -171,10 +164,10 @@ export function useNameList(
     setWeightMap(newWeightMap)
     // 更新後のweightsを返す
     return currentNameList.map((n) => newWeightMap[n] ?? 1)
-  }, [])
+  }
 
   // 除外された名前を復活（重みを1に戻す）
-  const restoreName = useCallback((name: string): void => {
+  const restoreName = (name: string): void => {
     // 「さん」付きで渡された場合は除去
     const baseName = name.replace(/さん$/, '')
     setWeightMap((prev) => {
@@ -186,10 +179,10 @@ export function useNameList(
       }
       return prev
     })
-  }, [])
+  }
 
   // 名前をリストから完全に削除
-  const removeName = useCallback((name: string): void => {
+  const removeName = (name: string): void => {
     // 「さん」付きで渡された場合は除去
     const baseName = name.replace(/さん$/, '')
     setRawNames((prev) => {
@@ -209,12 +202,12 @@ export function useNameList(
       }
       return prev
     })
-  }, [])
+  }
 
   // 全ての重みをリセット
-  const resetWeights = useCallback(() => {
+  const resetWeights = () => {
     setWeightMap({})
-  }, [])
+  }
 
   return {
     rawNames,

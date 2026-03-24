@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { RouletteWheel } from '../RouletteWheel'
 import { NameInput } from '../NameInput'
 import { ResultDisplay } from '../ResultDisplay'
@@ -94,17 +94,17 @@ export function NameRoulette() {
   }, [result, isSpinning, interruptionChecked, interruptionOccurred])
 
   // 乱入演出完了後の処理
-  const handleInterruptionComplete = useCallback(() => {
+  const handleInterruptionComplete = () => {
     setInterruptionType(null)
     reset()
     // 少し遅延してから再スピン（ちょっとだけ回す）
     setTimeout(() => {
       spin(displayNameList, weights, { nudge: true })
     }, 100)
-  }, [reset, spin, displayNameList, weights])
+  }
 
   // スタートボタンのハンドラ
-  const handleStart = useCallback(() => {
+  const handleStart = () => {
     // 前回の当選者がいて、まだ除外されていない場合は確認ダイアログを表示
     // ただし、除外すると2人未満になる場合は確認しない
     if (lastWinner && displayNameList.length >= 3) {
@@ -117,41 +117,41 @@ export function NameRoulette() {
       }
     }
     spin(displayNameList, weights)
-  }, [lastWinner, nameList, weights, spin, displayNameList])
+  }
 
   // 除外して開始
-  const handleExcludeAndStart = useCallback(() => {
+  const handleExcludeAndStart = () => {
     if (lastWinner) {
       const newWeights = excludeName(lastWinner)
       setShowExcludeConfirm(false)
       spin(displayNameList, newWeights)
     }
-  }, [lastWinner, excludeName, spin, displayNameList])
+  }
 
   // 除外せずに開始
-  const handleStartWithoutExclude = useCallback(() => {
+  const handleStartWithoutExclude = () => {
     setShowExcludeConfirm(false)
     spin(displayNameList, weights)
-  }, [spin, displayNameList, weights])
+  }
 
-  const handleDragStart = useCallback(() => {
+  const handleDragStart = () => {
     setDragging(true, displayNameList, weights)
-  }, [setDragging, displayNameList, weights])
+  }
 
-  const handleDragEnd = useCallback(() => {
+  const handleDragEnd = () => {
     setDragging(false, displayNameList, weights)
-  }, [setDragging, displayNameList, weights])
+  }
 
   // 完全リセット（リセットボタン用）
-  const handleFullReset = useCallback(() => {
+  const handleFullReset = () => {
     reset()
     resetWeights()
     setLastWinner(null)
     setChallengedPerson(null)
-  }, [reset, resetWeights])
+  }
 
   // 結果画面を閉じる（当選者を記録して次回の確認に使う）
-  const handleCloseResult = useCallback(() => {
+  const handleCloseResult = () => {
     if (result) {
       // 前回の除外者がいれば復活させる（前々回以前は除外しない）
       if (lastWinner) {
@@ -167,17 +167,17 @@ export function NameRoulette() {
     // 次のターンでは乱入の出現確率をリセット
     setInterruptionOccurred(false)
     reset()
-  }, [result, reset, lastWinner, challengedPerson, restoreName])
+  }
 
   // 「待った」ボタンを押した時（確認ダイアログを表示）
-  const handleChallenge = useCallback(() => {
+  const handleChallenge = () => {
     if (result) {
       setShowChallengeConfirm(true)
     }
-  }, [result])
+  }
 
   // 「待った」確認で「はい」を選んだ時
-  const handleChallengeConfirm = useCallback(() => {
+  const handleChallengeConfirm = () => {
     if (result) {
       // 前回「待った」された人がいれば復活させる
       if (challengedPerson && challengedPerson !== result) {
@@ -195,18 +195,10 @@ export function NameRoulette() {
         spin(displayNameList, newWeights)
       }, 100)
     }
-  }, [
-    result,
-    halveWeight,
-    reset,
-    spin,
-    displayNameList,
-    challengedPerson,
-    restoreName,
-  ])
+  }
 
   // 「待った」確認で「いいえ」を選んだ時（確率変更なしで再抽選）
-  const handleChallengeCancel = useCallback(() => {
+  const handleChallengeCancel = () => {
     setShowChallengeConfirm(false)
     // 動物乱入の確率をリセット
     setInterruptionOccurred(false)
@@ -215,33 +207,27 @@ export function NameRoulette() {
     setTimeout(() => {
       spin(displayNameList, weights)
     }, 100)
-  }, [reset, spin, displayNameList, weights])
+  }
 
   // 当選者を前後にシフト
-  const handleShiftResult = useCallback(
-    (direction: -1 | 1) => {
-      shiftResult(direction, displayNameList, weights)
-    },
-    [shiftResult, displayNameList, weights]
-  )
+  const handleShiftResult = (direction: -1 | 1) => {
+    shiftResult(direction, displayNameList, weights)
+  }
 
   // コンテキストメニューを開く
-  const handleRouletteContextMenu = useCallback(
-    (name: string, x: number, y: number) => {
-      if (!isSpinning) {
-        setContextMenu({ name, x, y })
-      }
-    },
-    [isSpinning]
-  )
+  const handleRouletteContextMenu = (name: string, x: number, y: number) => {
+    if (!isSpinning) {
+      setContextMenu({ name, x, y })
+    }
+  }
 
   // コンテキストメニューを閉じる
-  const handleCloseContextMenu = useCallback(() => {
+  const handleCloseContextMenu = () => {
     setContextMenu(null)
-  }, [])
+  }
 
   // 名前リストをシャッフル
-  const handleShuffle = useCallback(() => {
+  const handleShuffle = () => {
     const lines = rawNames.split('\n').filter((line) => line.trim() !== '')
     // Fisher-Yates shuffle
     for (let i = lines.length - 1; i > 0; i--) {
@@ -249,7 +235,7 @@ export function NameRoulette() {
       ;[lines[i], lines[j]] = [lines[j], lines[i]]
     }
     handleNamesChange(lines.join('\n'))
-  }, [rawNames, handleNamesChange])
+  }
 
   const canStart = nameList.length >= 2 && !isSpinning
 

@@ -1,4 +1,4 @@
-import { memo, useRef, useCallback, useMemo, useEffect } from 'react'
+import { useRef, useMemo, useEffect } from 'react'
 import { playClickSound } from '../../utils/sound'
 
 const COLORS = [
@@ -36,7 +36,7 @@ export interface RouletteWheelProps {
   onContextMenu?: (name: string, x: number, y: number) => void
 }
 
-export const RouletteWheel = memo(function RouletteWheel({
+export function RouletteWheel({
   items,
   weights,
   rotation,
@@ -97,85 +97,73 @@ export const RouletteWheel = memo(function RouletteWheel({
     lastSegmentIndexRef.current = currentSegmentIndex
   }, [rotation, segmentAngles, items.length])
 
-  const getAngleFromCenter = useCallback(
-    (clientX: number, clientY: number): number => {
-      if (!svgRef.current) return 0
-      const rect = svgRef.current.getBoundingClientRect()
-      const centerX = rect.left + rect.width / 2
-      const centerY = rect.top + rect.height / 2
-      const dx = clientX - centerX
-      const dy = clientY - centerY
-      return Math.atan2(dy, dx) * (180 / Math.PI)
-    },
-    []
-  )
+  const getAngleFromCenter = (clientX: number, clientY: number): number => {
+    if (!svgRef.current) return 0
+    const rect = svgRef.current.getBoundingClientRect()
+    const centerX = rect.left + rect.width / 2
+    const centerY = rect.top + rect.height / 2
+    const dx = clientX - centerX
+    const dy = clientY - centerY
+    return Math.atan2(dy, dx) * (180 / Math.PI)
+  }
 
-  const handlePointerDown = useCallback(
-    (e: React.PointerEvent) => {
-      if (!onDragRotate) return
-      isDraggingRef.current = true
-      lastAngleRef.current = getAngleFromCenter(e.clientX, e.clientY)
-      ;(e.target as Element).setPointerCapture(e.pointerId)
-      onDragStart?.()
-    },
-    [onDragRotate, getAngleFromCenter, onDragStart]
-  )
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (!onDragRotate) return
+    isDraggingRef.current = true
+    lastAngleRef.current = getAngleFromCenter(e.clientX, e.clientY)
+    ;(e.target as Element).setPointerCapture(e.pointerId)
+    onDragStart?.()
+  }
 
-  const handlePointerMove = useCallback(
-    (e: React.PointerEvent) => {
-      if (
-        !isDraggingRef.current ||
-        !onDragRotate ||
-        lastAngleRef.current === null
-      )
-        return
-      const currentAngle = getAngleFromCenter(e.clientX, e.clientY)
-      let delta = currentAngle - lastAngleRef.current
-      // -180〜180の範囲に正規化
-      if (delta > 180) delta -= 360
-      if (delta < -180) delta += 360
-      onDragRotate(delta, performance.now())
-      lastAngleRef.current = currentAngle
-    },
-    [onDragRotate, getAngleFromCenter]
-  )
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (
+      !isDraggingRef.current ||
+      !onDragRotate ||
+      lastAngleRef.current === null
+    )
+      return
+    const currentAngle = getAngleFromCenter(e.clientX, e.clientY)
+    let delta = currentAngle - lastAngleRef.current
+    // -180〜180の範囲に正規化
+    if (delta > 180) delta -= 360
+    if (delta < -180) delta += 360
+    onDragRotate(delta, performance.now())
+    lastAngleRef.current = currentAngle
+  }
 
-  const handlePointerUp = useCallback(() => {
+  const handlePointerUp = () => {
     if (isDraggingRef.current) {
       onDragEnd?.()
     }
     isDraggingRef.current = false
     lastAngleRef.current = null
-  }, [onDragEnd])
+  }
 
   // 右クリック時にどのセグメントがクリックされたかを判定
-  const handleContextMenu = useCallback(
-    (e: React.MouseEvent) => {
-      if (!onContextMenu) return
+  const handleContextMenu = (e: React.MouseEvent) => {
+    if (!onContextMenu) return
 
-      e.preventDefault()
+    e.preventDefault()
 
-      // クリック位置から角度を計算
-      const clickAngle = getAngleFromCenter(e.clientX, e.clientY)
-      // 現在の回転を考慮して調整（回転の逆方向に補正）
-      let adjustedAngle = clickAngle - rotation
-      // 0-360に正規化
-      adjustedAngle = ((adjustedAngle % 360) + 360) % 360
+    // クリック位置から角度を計算
+    const clickAngle = getAngleFromCenter(e.clientX, e.clientY)
+    // 現在の回転を考慮して調整（回転の逆方向に補正）
+    let adjustedAngle = clickAngle - rotation
+    // 0-360に正規化
+    adjustedAngle = ((adjustedAngle % 360) + 360) % 360
 
-      // どのセグメントがクリックされたかを判定
-      let accumulatedAngle = 0
-      for (let i = 0; i < items.length; i++) {
-        accumulatedAngle += segmentAngles[i]
-        // startAnglesは-90から始まるので、adjustedAngleも-90基準に変換
-        const normalizedClickAngle = (((adjustedAngle + 90) % 360) + 360) % 360
-        if (normalizedClickAngle < accumulatedAngle) {
-          onContextMenu(items[i], e.clientX, e.clientY)
-          return
-        }
+    // どのセグメントがクリックされたかを判定
+    let accumulatedAngle = 0
+    for (let i = 0; i < items.length; i++) {
+      accumulatedAngle += segmentAngles[i]
+      // startAnglesは-90から始まるので、adjustedAngleも-90基準に変換
+      const normalizedClickAngle = (((adjustedAngle + 90) % 360) + 360) % 360
+      if (normalizedClickAngle < accumulatedAngle) {
+        onContextMenu(items[i], e.clientX, e.clientY)
+        return
       }
-    },
-    [onContextMenu, getAngleFromCenter, rotation, items, segmentAngles]
-  )
+    }
+  }
 
   if (items.length < 2) {
     return (
@@ -309,4 +297,4 @@ export const RouletteWheel = memo(function RouletteWheel({
       </svg>
     </div>
   )
-})
+}

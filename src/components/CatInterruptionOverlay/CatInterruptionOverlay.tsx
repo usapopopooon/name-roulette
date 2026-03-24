@@ -1,4 +1,4 @@
-import { memo, useEffect } from 'react'
+import { useEffect } from 'react'
 
 export type InterruptionType = 'cat' | 'duck'
 
@@ -20,7 +20,7 @@ const interruptionConfig = {
   },
 }
 
-export const CatInterruptionOverlay = memo(function CatInterruptionOverlay({
+export function CatInterruptionOverlay({
   show,
   type = 'cat',
   onComplete,
@@ -72,4 +72,4 @@ export const CatInterruptionOverlay = memo(function CatInterruptionOverlay({
       </div>
     </div>
   )
-})
+}

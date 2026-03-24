@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react'
+import { useEffect } from 'react'
 
 export interface UseURLSyncOptions {
   names: string
@@ -61,7 +61,7 @@ export function useURLSync(options: UseURLSyncOptions): UseURLSyncReturn {
     updateURL(names, withHonorific, lastWinner)
   }, [names, withHonorific, lastWinner])
 
-  const copyShareLink = useCallback(async (): Promise<boolean> => {
+  const copyShareLink = async (): Promise<boolean> => {
     if (typeof window === 'undefined') return false
 
     const url = window.location.href
@@ -81,7 +81,7 @@ export function useURLSync(options: UseURLSyncOptions): UseURLSyncReturn {
         return false
       }
     }
-  }, [])
+  }
 
   return { copyShareLink }
 }

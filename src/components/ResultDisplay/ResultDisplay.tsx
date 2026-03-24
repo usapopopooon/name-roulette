@@ -1,4 +1,4 @@
-import { memo, useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { Confetti } from './Confetti'
 import { Fireworks } from './Fireworks'
 import { ContextMenu } from '../ContextMenu'
@@ -14,7 +14,7 @@ export interface ResultDisplayProps {
   onShift?: (direction: -1 | 1) => void
 }
 
-export const ResultDisplay = memo(function ResultDisplay({
+export function ResultDisplay({
   result,
   candidates = [],
   onClose,
@@ -38,14 +38,14 @@ export const ResultDisplay = memo(function ResultDisplay({
     setContextMenu(null)
   }, [result])
 
-  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+  const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault()
     setContextMenu({ x: e.clientX, y: e.clientY })
-  }, [])
+  }
 
-  const handleCloseContextMenu = useCallback(() => {
+  const handleCloseContextMenu = () => {
     setContextMenu(null)
-  }, [])
+  }
 
   if (!result) return null
 
@@ -113,4 +113,4 @@ export const ResultDisplay = memo(function ResultDisplay({
       )}
     </>
   )
-})
+}

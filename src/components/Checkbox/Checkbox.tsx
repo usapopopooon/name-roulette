@@ -1,4 +1,3 @@
-import { memo } from 'react'
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox'
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -10,7 +9,7 @@ export interface CheckboxProps {
   disabled?: boolean
 }
 
-export const Checkbox = memo(function Checkbox({
+export function Checkbox({
   label,
   checked,
   onChange,
@@ -43,4 +42,4 @@ export const Checkbox = memo(function Checkbox({
       <span className="text-gray-400 text-[0.95rem]">{label}</span>
     </label>
   )
-})
+}

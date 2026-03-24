@@ -48,7 +48,12 @@ describe('NameInput', () => {
 
   it('should render shuffle button when onShuffle is provided', () => {
     render(
-      <NameInput value="田中\n佐藤" onChange={() => {}} onShuffle={() => {}} count={2} />
+      <NameInput
+        value="田中\n佐藤"
+        onChange={() => {}}
+        onShuffle={() => {}}
+        count={2}
+      />
     )
 
     expect(screen.getByText('🔀 シャッフル')).toBeInTheDocument()
@@ -63,7 +68,12 @@ describe('NameInput', () => {
   it('should call onShuffle when shuffle button is clicked', () => {
     const onShuffle = vi.fn()
     render(
-      <NameInput value="田中\n佐藤" onChange={() => {}} onShuffle={onShuffle} count={2} />
+      <NameInput
+        value="田中\n佐藤"
+        onChange={() => {}}
+        onShuffle={onShuffle}
+        count={2}
+      />
     )
 
     fireEvent.click(screen.getByText('🔀 シャッフル'))
@@ -73,7 +83,12 @@ describe('NameInput', () => {
 
   it('should disable shuffle button when count is less than 2', () => {
     render(
-      <NameInput value="田中" onChange={() => {}} onShuffle={() => {}} count={1} />
+      <NameInput
+        value="田中"
+        onChange={() => {}}
+        onShuffle={() => {}}
+        count={1}
+      />
     )
 
     expect(screen.getByText('🔀 シャッフル')).toBeDisabled()

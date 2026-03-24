@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react'
+import { useMemo } from 'react'
 
 const COLORS = [
   '#FFD700', // gold
@@ -23,7 +23,7 @@ interface ConfettiPiece {
   rotation: number
 }
 
-export const Confetti = memo(function Confetti() {
+export function Confetti() {
   const pieces = useMemo<ConfettiPiece[]>(() => {
     return Array.from({ length: 150 }, (_, i) => ({
       id: i,
@@ -57,4 +57,4 @@ export const Confetti = memo(function Confetti() {
       ))}
     </div>
   )
-})
+}

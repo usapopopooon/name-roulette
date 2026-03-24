@@ -1,4 +1,4 @@
-import { memo, ButtonHTMLAttributes } from 'react'
+import { ButtonHTMLAttributes } from 'react'
 import { cva } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
@@ -41,7 +41,7 @@ export interface ActionButtonProps extends ButtonHTMLAttributes<HTMLButtonElemen
   size?: 'default' | 'sm'
 }
 
-export const ActionButton = memo(function ActionButton({
+export function ActionButton({
   variant = 'primary',
   size = 'default',
   disabled,
@@ -61,4 +61,4 @@ export const ActionButton = memo(function ActionButton({
       {children}
     </button>
   )
-})
+}
