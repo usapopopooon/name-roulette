@@ -41,6 +41,8 @@ export function useRoulette(
   const isDraggingRef = useRef(false)
   const pendingItemsRef = useRef<RouletteItem[] | null>(null)
   const pendingWeightsRef = useRef<number[] | null>(null)
+  const interruptedSpinItemsRef = useRef<RouletteItem[] | null>(null)
+  const interruptedSpinWeightsRef = useRef<number[] | null>(null)
   const resultRef = useRef<string | null>(null)
 
   resultRef.current = result
@@ -56,6 +58,8 @@ export function useRoulette(
     if (items.length < 2) return
 
     setIsSpinning(false)
+    interruptedSpinItemsRef.current = null
+    interruptedSpinWeightsRef.current = null
 
     const w = weights || items.map(() => 1)
     const totalWeight = w.reduce((sum, weight) => sum + weight, 0)
@@ -155,6 +159,8 @@ export function useRoulette(
     setResult(null)
     pendingItemsRef.current = null
     pendingWeightsRef.current = null
+    interruptedSpinItemsRef.current = null
+    interruptedSpinWeightsRef.current = null
 
     const startRotation = rotation
     let totalSpins: number
@@ -204,6 +210,8 @@ export function useRoulette(
     }
     pendingItemsRef.current = null
     pendingWeightsRef.current = null
+    interruptedSpinItemsRef.current = null
+    interruptedSpinWeightsRef.current = null
     recentDeltasRef.current = []
     velocityRef.current = 0
     setIsSpinning(false)
@@ -229,6 +237,10 @@ export function useRoulette(
 
     if (dragging) {
       if (animationRef.current) {
+        if (isSpinning && !resultRef.current) {
+          interruptedSpinItemsRef.current = items
+          interruptedSpinWeightsRef.current = weights || null
+        }
         cancelAnimationFrame(animationRef.current)
         animationRef.current = null
       }
@@ -249,6 +261,19 @@ export function useRoulette(
       }
 
       recentDeltasRef.current = []
+      if (
+        Math.abs(velocityRef.current) < 0.5 &&
+        interruptedSpinItemsRef.current &&
+        !pendingItemsRef.current
+      ) {
+        const interruptedItems = interruptedSpinItemsRef.current
+        const interruptedWeights = interruptedSpinWeightsRef.current
+        interruptedSpinItemsRef.current = null
+        interruptedSpinWeightsRef.current = null
+        startInertiaAnimation(18, interruptedItems, interruptedWeights || undefined)
+        return
+      }
+
       startInertiaAnimation(velocityRef.current, items, weights)
     }
   }

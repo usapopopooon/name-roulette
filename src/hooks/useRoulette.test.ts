@@ -11,9 +11,19 @@ const items: RouletteItem[] = [
 describe('useRoulette', () => {
   beforeEach(() => {
     vi.useFakeTimers()
+    vi.stubGlobal(
+      'requestAnimationFrame',
+      ((callback: FrameRequestCallback) =>
+        setTimeout(() => callback(Date.now()), 16)) as typeof requestAnimationFrame
+    )
+    vi.stubGlobal(
+      'cancelAnimationFrame',
+      ((id: number) => clearTimeout(id)) as typeof cancelAnimationFrame
+    )
   })
 
   afterEach(() => {
+    vi.unstubAllGlobals()
     vi.useRealTimers()
   })
 
@@ -89,6 +99,35 @@ describe('useRoulette', () => {
     const { result } = renderHook(() => useRoulette({ onComplete }))
 
     expect(result.current.isSpinning).toBe(false)
+  })
+
+  test('回転中に触って一瞬止まっても、離したら回転が再開して当選まで進む', () => {
+    const { result } = renderHook(() => useRoulette())
+
+    act(() => {
+      result.current.spin(items)
+      vi.advanceTimersByTime(200)
+    })
+
+    const rotationBeforeInterrupt = result.current.rotation
+
+    act(() => {
+      result.current.setDragging(true, items)
+      result.current.setDragging(false, items)
+    })
+
+    act(() => {
+      vi.advanceTimersByTime(100)
+    })
+
+    expect(result.current.rotation).not.toBe(rotationBeforeInterrupt)
+
+    act(() => {
+      vi.advanceTimersByTime(10000)
+    })
+
+    expect(result.current.isSpinning).toBe(false)
+    expect(result.current.result).not.toBeNull()
   })
 
   describe('shiftResult', () => {
