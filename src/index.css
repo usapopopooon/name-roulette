@@ -119,6 +119,89 @@
     }
   }
 
+  @keyframes cat-chaos {
+    0%,
+    100% {
+      transform: translate(-50%, -50%) rotate(-8deg) scale(1);
+    }
+    15% {
+      transform: translate(-48%, -54%) rotate(10deg) scale(1.05);
+    }
+    35% {
+      transform: translate(-53%, -47%) rotate(-14deg) scale(0.98);
+    }
+    55% {
+      transform: translate(-46%, -52%) rotate(12deg) scale(1.04);
+    }
+    75% {
+      transform: translate(-52%, -46%) rotate(-10deg) scale(0.97);
+    }
+  }
+
+  @keyframes cat-scratch-paw {
+    0% {
+      opacity: 0;
+      transform: translateX(0) scale(0.9);
+    }
+    18% {
+      opacity: 1;
+      transform: translateX(1.1rem) scale(1.05);
+    }
+    38% {
+      opacity: 0.95;
+      transform: translateX(0.2rem) scale(0.96);
+    }
+    58% {
+      opacity: 1;
+      transform: translateX(1.3rem) scale(1.04);
+    }
+    82% {
+      opacity: 0.9;
+      transform: translateX(0.15rem) scale(0.98);
+    }
+    100% {
+      opacity: 0.65;
+      transform: translateX(0.9rem) scale(1);
+    }
+  }
+
+  @keyframes screen-rattle {
+    0%,
+    100% {
+      transform: translate(0, 0);
+    }
+    10% {
+      transform: translate(-0.35rem, -0.15rem);
+    }
+    20% {
+      transform: translate(0.28rem, 0.12rem);
+    }
+    30% {
+      transform: translate(-0.25rem, 0.18rem);
+    }
+    40% {
+      transform: translate(0.32rem, -0.18rem);
+    }
+    50% {
+      transform: translate(-0.18rem, -0.08rem);
+    }
+    60% {
+      transform: translate(0.22rem, 0.2rem);
+    }
+    70% {
+      transform: translate(-0.3rem, -0.16rem);
+    }
+    80% {
+      transform: translate(0.18rem, 0.14rem);
+    }
+    90% {
+      transform: translate(-0.16rem, 0.08rem);
+    }
+  }
+
   --animate-cat-walk: cat-walk 2.5s linear forwards;
   --animate-cat-waddle: cat-waddle 0.3s ease-in-out infinite;
+  --animate-cat-chaos: cat-chaos 0.45s steps(2, end) infinite;
+  --animate-cat-scratch-paw: cat-scratch-paw 0.75s ease-in-out infinite;
+  --animate-screen-rattle: screen-rattle 0.2s steps(2, end) infinite;
 }

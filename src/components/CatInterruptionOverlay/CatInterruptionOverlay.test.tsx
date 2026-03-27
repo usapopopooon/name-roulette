@@ -20,7 +20,7 @@ describe('CatInterruptionOverlay', () => {
   test('showがtrueの場合に猫の通過テキストを表示する', () => {
     render(<CatInterruptionOverlay show={true} type="cat" />)
 
-    expect(screen.getByText('🐾 猫が通過中... 🐾')).toBeInTheDocument()
+    expect(screen.getByText('🐾 猫が暴れ中... 🐾')).toBeInTheDocument()
   })
 
   test('typeがduckの場合にアヒルの行進テキストを表示する', () => {
@@ -32,13 +32,19 @@ describe('CatInterruptionOverlay', () => {
   test('typeが指定されない場合はデフォルトで猫を表示する', () => {
     render(<CatInterruptionOverlay show={true} />)
 
-    expect(screen.getByText('🐾 猫が通過中... 🐾')).toBeInTheDocument()
+    expect(screen.getByText('🐾 猫が暴れ中... 🐾')).toBeInTheDocument()
   })
 
   test('猫の絵文字を表示する', () => {
     render(<CatInterruptionOverlay show={true} type="cat" />)
 
-    expect(screen.getByText('🐈')).toBeInTheDocument()
+    expect(screen.getByText('🐱')).toBeInTheDocument()
+  })
+
+  test('猫の場合は左右から前足アイコンを複数表示する', () => {
+    render(<CatInterruptionOverlay show={true} type="cat" />)
+
+    expect(screen.getAllByText('🐾')).toHaveLength(4)
   })
 
   test('アヒルの場合は親アヒルと子アヒル3匹を表示する', () => {
