@@ -11,15 +11,13 @@ const items: RouletteItem[] = [
 describe('useRoulette', () => {
   beforeEach(() => {
     vi.useFakeTimers()
-    vi.stubGlobal(
-      'requestAnimationFrame',
-      ((callback: FrameRequestCallback) =>
-        setTimeout(() => callback(Date.now()), 16)) as typeof requestAnimationFrame
-    )
-    vi.stubGlobal(
-      'cancelAnimationFrame',
-      ((id: number) => clearTimeout(id)) as typeof cancelAnimationFrame
-    )
+    vi.stubGlobal('requestAnimationFrame', ((callback: FrameRequestCallback) =>
+      setTimeout(
+        () => callback(Date.now()),
+        16
+      )) as typeof requestAnimationFrame)
+    vi.stubGlobal('cancelAnimationFrame', ((id: number) =>
+      clearTimeout(id)) as typeof cancelAnimationFrame)
   })
 
   afterEach(() => {

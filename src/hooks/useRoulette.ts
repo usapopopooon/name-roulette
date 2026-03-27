@@ -18,10 +18,18 @@ export interface UseRouletteReturn {
   isSpinning: boolean
   rotation: number
   result: string | null
-  spin: (items: RouletteItem[], weights?: number[], options?: SpinOptions) => void
+  spin: (
+    items: RouletteItem[],
+    weights?: number[],
+    options?: SpinOptions
+  ) => void
   reset: () => void
   addRotationWithVelocity: (delta: number, timestamp: number) => void
-  setDragging: (dragging: boolean, items: RouletteItem[], weights?: number[]) => void
+  setDragging: (
+    dragging: boolean,
+    items: RouletteItem[],
+    weights?: number[]
+  ) => void
   /** 結果を前後の候補にシフト（direction: -1 = 前, 1 = 次） */
   shiftResult: (
     direction: -1 | 1,
@@ -270,7 +278,11 @@ export function useRoulette(
         const interruptedWeights = interruptedSpinWeightsRef.current
         interruptedSpinItemsRef.current = null
         interruptedSpinWeightsRef.current = null
-        startInertiaAnimation(18, interruptedItems, interruptedWeights || undefined)
+        startInertiaAnimation(
+          18,
+          interruptedItems,
+          interruptedWeights || undefined
+        )
         return
       }
 
