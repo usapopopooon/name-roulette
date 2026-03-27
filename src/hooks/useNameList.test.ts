@@ -57,6 +57,22 @@ describe('useNameList', () => {
     ])
   })
 
+  it('should compact empty and whitespace lines via compactRawNames', () => {
+    const { result } = renderHook(() =>
+      useNameList({
+        initialNames: ' 田中 \n\n   \n佐藤  ',
+        withHonorific: false,
+      })
+    )
+
+    act(() => {
+      result.current.compactRawNames()
+    })
+
+    expect(result.current.rawNames).toBe('田中\n佐藤')
+    expect(result.current.nameList).toEqual(['田中', '佐藤'])
+  })
+
   it('should filter empty lines from nameList', () => {
     const { result } = renderHook(() =>
       useNameList({

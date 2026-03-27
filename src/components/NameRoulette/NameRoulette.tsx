@@ -32,6 +32,7 @@ export function NameRoulette() {
     withHonorific,
     setWithHonorific,
     handleNamesChange,
+    compactRawNames,
     halveWeight,
     doubleWeight,
     excludeName,
@@ -135,11 +136,13 @@ export function NameRoulette() {
     setInterruptionType(null)
     reset()
     setTimeout(() => {
+      compactRawNames()
       spin(rouletteItems, weights, { nudge: true })
     }, 100)
   }
 
   const handleStart = () => {
+    compactRawNames()
     if (lastWinner.id && rouletteItems.length >= 3) {
       const winnerIndex = rouletteItems.findIndex(
         (item) => item.id === lastWinner.id
@@ -156,12 +159,14 @@ export function NameRoulette() {
     if (lastWinner.id) {
       const newWeights = excludeName(lastWinner.id)
       setShowExcludeConfirm(false)
+      compactRawNames()
       spin(rouletteItems, newWeights)
     }
   }
 
   const handleStartWithoutExclude = () => {
     setShowExcludeConfirm(false)
+    compactRawNames()
     spin(rouletteItems, weights)
   }
 
@@ -212,6 +217,7 @@ export function NameRoulette() {
       setInterruptionOccurred(false)
       reset()
       setTimeout(() => {
+        compactRawNames()
         spin(rouletteItems, newWeights)
       }, 100)
     }
@@ -222,6 +228,7 @@ export function NameRoulette() {
     setInterruptionOccurred(false)
     reset()
     setTimeout(() => {
+      compactRawNames()
       spin(rouletteItems, weights)
     }, 100)
   }

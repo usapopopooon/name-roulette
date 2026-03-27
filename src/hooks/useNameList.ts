@@ -27,6 +27,7 @@ export interface UseNameListReturn {
   setRawNames: (names: string) => void
   setWithHonorific: (value: boolean) => void
   handleNamesChange: (value: string) => void
+  compactRawNames: () => void
   halveWeight: (id: string) => number[]
   doubleWeight: (id: string) => void
   excludeName: (id: string) => number[]
@@ -208,6 +209,11 @@ export function useNameList(
     updateNames(nextRawNames)
   }
 
+  const compactRawNames = () => {
+    // entries は空行・空白行を除いた正規化済みのため、ここから再構築すると入力を詰められる
+    setRawNamesState(serializeEntries(entriesRef.current, withHonorific))
+  }
+
   const getUpdatedWeights = (
     id: string,
     update: (currentWeight: number) => number
@@ -278,6 +284,7 @@ export function useNameList(
     setRawNames,
     setWithHonorific,
     handleNamesChange,
+    compactRawNames,
     halveWeight,
     doubleWeight,
     excludeName,

@@ -20,7 +20,8 @@ const updateURL = (
   const params = new URLSearchParams()
   const cleanNames = names
     .split('\n')
-    .map((line) => line.replace(/さん$/, ''))
+    .map((line) => line.trim().replace(/さん$/, ''))
+    .filter((line) => line)
     .join('\n')
 
   if (cleanNames.trim()) {

@@ -36,6 +36,18 @@ describe('useURLSync', () => {
     expect(decoded).not.toContain('さん')
   })
 
+  it('should not include empty or whitespace-only lines in URL', () => {
+    renderHook(() =>
+      useURLSync({ names: '田中\n\n   \n佐藤\n  ', withHonorific: true })
+    )
+
+    const decoded = decodeURIComponent(
+      decodeURIComponent(window.location.search)
+    )
+    expect(decoded).toContain('田中\n佐藤')
+    expect(decoded).not.toContain('\n\n')
+  })
+
   it('should return empty search when names is empty', () => {
     renderHook(() => useURLSync({ names: '', withHonorific: true }))
 
