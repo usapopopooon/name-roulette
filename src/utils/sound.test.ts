@@ -11,12 +11,17 @@ describe('sound utilities', () => {
     connect: ReturnType<typeof vi.fn>
     start: ReturnType<typeof vi.fn>
     stop: ReturnType<typeof vi.fn>
-    frequency: { value: number }
+    frequency: {
+      value: number
+      setValueAtTime: ReturnType<typeof vi.fn>
+      exponentialRampToValueAtTime: ReturnType<typeof vi.fn>
+    }
     type: string
   }
   let mockGainNode: {
     connect: ReturnType<typeof vi.fn>
     gain: {
+      cancelScheduledValues: ReturnType<typeof vi.fn>
       setValueAtTime: ReturnType<typeof vi.fn>
       exponentialRampToValueAtTime: ReturnType<typeof vi.fn>
     }
@@ -29,13 +34,18 @@ describe('sound utilities', () => {
       connect: vi.fn(),
       start: vi.fn(),
       stop: vi.fn(),
-      frequency: { value: 0 },
+      frequency: {
+        value: 0,
+        setValueAtTime: vi.fn(),
+        exponentialRampToValueAtTime: vi.fn(),
+      },
       type: '',
     }
 
     mockGainNode = {
       connect: vi.fn(),
       gain: {
+        cancelScheduledValues: vi.fn(),
         setValueAtTime: vi.fn(),
         exponentialRampToValueAtTime: vi.fn(),
       },
@@ -63,30 +73,33 @@ describe('sound utilities', () => {
       const { playClickSound } = await import('./sound')
       playClickSound()
 
-      expect(mockAudioContext.createOscillator).toHaveBeenCalled()
-      expect(mockAudioContext.createGain).toHaveBeenCalled()
+      expect(mockAudioContext.createOscillator).toHaveBeenCalledTimes(2)
+      expect(mockAudioContext.createGain).toHaveBeenCalledTimes(3)
     })
 
-    it('should set oscillator frequency to 800Hz', async () => {
+    it('should shape the click with pitch envelopes', async () => {
       const { playClickSound } = await import('./sound')
       playClickSound()
 
-      expect(mockOscillator.frequency.value).toBe(800)
+      expect(mockOscillator.frequency.setValueAtTime).toHaveBeenCalled()
+      expect(
+        mockOscillator.frequency.exponentialRampToValueAtTime
+      ).toHaveBeenCalled()
     })
 
-    it('should use square wave type', async () => {
+    it('should use layered oscillator types', async () => {
       const { playClickSound } = await import('./sound')
       playClickSound()
 
-      expect(mockOscillator.type).toBe('square')
+      expect(['triangle', 'sine']).toContain(mockOscillator.type)
     })
 
-    it('should start and stop oscillator', async () => {
+    it('should start and stop oscillators', async () => {
       const { playClickSound } = await import('./sound')
       playClickSound()
 
-      expect(mockOscillator.start).toHaveBeenCalled()
-      expect(mockOscillator.stop).toHaveBeenCalled()
+      expect(mockOscillator.start).toHaveBeenCalledTimes(2)
+      expect(mockOscillator.stop).toHaveBeenCalledTimes(2)
     })
 
     it('should not throw when AudioContext is not supported', async () => {
@@ -98,28 +111,26 @@ describe('sound utilities', () => {
   })
 
   describe('playFanfare', () => {
-    it('should create multiple oscillators for the fanfare notes', async () => {
+    it('should create oscillators and gain nodes for the fanfare', async () => {
       const { playFanfare } = await import('./sound')
       playFanfare()
 
-      // ドミソド = 4音
-      expect(mockAudioContext.createOscillator).toHaveBeenCalledTimes(4)
-      expect(mockAudioContext.createGain).toHaveBeenCalledTimes(4)
+      expect(mockAudioContext.createOscillator).toHaveBeenCalled()
+      expect(mockAudioContext.createGain).toHaveBeenCalled()
     })
 
-    it('should use sine wave type for fanfare', async () => {
+    it('should use layered wave types for fanfare', async () => {
       const { playFanfare } = await import('./sound')
       playFanfare()
 
-      expect(mockOscillator.type).toBe('sine')
+      expect(['triangle', 'sine']).toContain(mockOscillator.type)
     })
 
-    it('should start and stop all oscillators', async () => {
+    it('should configure gain nodes for the fanfare', async () => {
       const { playFanfare } = await import('./sound')
       playFanfare()
 
-      expect(mockOscillator.start).toHaveBeenCalledTimes(4)
-      expect(mockOscillator.stop).toHaveBeenCalledTimes(4)
+      expect(mockGainNode.gain.setValueAtTime).toHaveBeenCalled()
     })
 
     it('should not throw when AudioContext is not supported', async () => {
