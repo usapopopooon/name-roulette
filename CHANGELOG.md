@@ -5,6 +5,12 @@
 フォーマットは [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に基づいており、
 [Semantic Versioning](https://semver.org/lang/ja/) に準拠しています。
 
+## [0.0.6] - 2026-03-27
+
+### 修正
+
+- 「名前に『さん』をつける」を `OFF -> ON` に戻した際、既存の名前にも即時で「さん」が付与されるように修正
+
 ## [0.0.5] - 2026-03-27
 
 ### 追加

@@ -58,6 +58,18 @@ const applyHonorificToCompletedLines = (value: string): string => {
     .join('\n')
 }
 
+const applyHonorificToAllLines = (value: string): string => {
+  return value
+    .split('\n')
+    .map((line) => {
+      if (line.trim() && !line.endsWith('さん')) {
+        return line + 'さん'
+      }
+      return line
+    })
+    .join('\n')
+}
+
 const serializeEntries = (
   entries: NameEntry[],
   withHonorific: boolean
@@ -179,14 +191,17 @@ export function useNameList(
   }
 
   useEffect(() => {
-    if (!withHonorific) {
-      setRawNamesState((prev) =>
-        prev
-          .split('\n')
-          .map((line) => line.replace(/さん$/, ''))
-          .join('\n')
-      )
+    if (withHonorific) {
+      setRawNamesState((prev) => applyHonorificToAllLines(prev))
+      return
     }
+
+    setRawNamesState((prev) =>
+      prev
+        .split('\n')
+        .map((line) => line.replace(/さん$/, ''))
+        .join('\n')
+    )
   }, [withHonorific])
 
   const updateNames = (nextRawNames: string) => {

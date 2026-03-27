@@ -106,6 +106,18 @@ describe('useNameList', () => {
     expect(result.current.withHonorific).toBe(false)
   })
 
+  it('should add さん suffix immediately when turning honorific on', () => {
+    const { result } = renderHook(() =>
+      useNameList({ initialNames: '田中\n佐藤', withHonorific: false })
+    )
+
+    act(() => {
+      result.current.setWithHonorific(true)
+    })
+
+    expect(result.current.rawNames).toBe('田中さん\n佐藤さん')
+  })
+
   it('should remove さん suffix when turning off honorific', () => {
     const { result } = renderHook(() =>
       useNameList({ initialNames: '田中さん\n佐藤さん', withHonorific: true })
