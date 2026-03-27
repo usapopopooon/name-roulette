@@ -176,9 +176,9 @@ export function useRoulette(
     let duration: number
 
     if (spinOptions?.nudge) {
-      totalSpins = 0.5 + Math.random() * 0.5
-      extraRotation = 30 + Math.random() * 120
-      duration = 2500 + Math.random() * 1000
+      totalSpins = 0.15 + Math.random() * 0.2
+      extraRotation = Math.random() * 360
+      duration = 1800 + Math.random() * 600
     } else {
       totalSpins = 5 + Math.random() * 3
       extraRotation = Math.random() * 360
@@ -254,6 +254,7 @@ export function useRoulette(
       }
       recentDeltasRef.current = []
     } else if (wasDragging) {
+      velocityRef.current = 0
       const now = performance.now()
       const recentDeltas = recentDeltasRef.current.filter(
         (d) => now - d.time < 100

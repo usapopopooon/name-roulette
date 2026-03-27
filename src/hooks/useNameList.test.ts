@@ -50,6 +50,11 @@ describe('useNameList', () => {
     })
 
     expect(result.current.rawNames).toBe('新しい名前\nもう一人')
+    expect(result.current.nameList).toEqual(['新しい名前', 'もう一人'])
+    expect(result.current.participants.map((p) => p.name)).toEqual([
+      '新しい名前',
+      'もう一人',
+    ])
   })
 
   it('should filter empty lines from nameList', () => {

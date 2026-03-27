@@ -136,7 +136,7 @@ export function useNameList(
   const initialEntries = createEntries(parseNames(initialRawNames))
 
   const [withHonorific, setWithHonorific] = useState(initialWithHonorific)
-  const [rawNames, setRawNames] = useState(initialRawNames)
+  const [rawNames, setRawNamesState] = useState(initialRawNames)
   const [entries, setEntries] = useState<NameEntry[]>(initialEntries)
 
   // 参加者ごとの重み（キーは内部ID）
@@ -179,7 +179,7 @@ export function useNameList(
 
   useEffect(() => {
     if (!withHonorific) {
-      setRawNames((prev) =>
+      setRawNamesState((prev) =>
         prev
           .split('\n')
           .map((line) => line.replace(/さん$/, ''))
@@ -189,11 +189,15 @@ export function useNameList(
   }, [withHonorific])
 
   const updateNames = (nextRawNames: string) => {
-    setRawNames(nextRawNames)
+    setRawNamesState(nextRawNames)
     const nextNames = parseNames(nextRawNames)
     setEntries((prevEntries) =>
       reconcileEntries(prevEntries, nextNames, createId)
     )
+  }
+
+  const setRawNames = (names: string) => {
+    updateNames(names)
   }
 
   const handleNamesChange = (newValue: string) => {
@@ -248,7 +252,7 @@ export function useNameList(
   const removeName = (id: string): void => {
     const nextEntries = entriesRef.current.filter((entry) => entry.id !== id)
     setEntries(nextEntries)
-    setRawNames(serializeEntries(nextEntries, withHonorific))
+    setRawNamesState(serializeEntries(nextEntries, withHonorific))
     setWeightMap((prev) => {
       if (!(id in prev)) {
         return prev

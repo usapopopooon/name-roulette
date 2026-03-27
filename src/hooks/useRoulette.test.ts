@@ -11,15 +11,13 @@ const items: RouletteItem[] = [
 describe('useRoulette', () => {
   beforeEach(() => {
     vi.useFakeTimers()
-    vi.stubGlobal(
-      'requestAnimationFrame',
-      ((callback: FrameRequestCallback) =>
-        window.setTimeout(() => callback(Date.now()), 16)) as typeof requestAnimationFrame
-    )
-    vi.stubGlobal(
-      'cancelAnimationFrame',
-      ((id: number) => window.clearTimeout(id)) as typeof cancelAnimationFrame
-    )
+    vi.stubGlobal('requestAnimationFrame', ((callback: FrameRequestCallback) =>
+      window.setTimeout(
+        () => callback(Date.now()),
+        16
+      )) as typeof requestAnimationFrame)
+    vi.stubGlobal('cancelAnimationFrame', ((id: number) =>
+      window.clearTimeout(id)) as typeof cancelAnimationFrame)
   })
 
   afterEach(() => {
@@ -128,6 +126,42 @@ describe('useRoulette', () => {
 
     expect(result.current.isSpinning).toBe(false)
     expect(result.current.result).not.toBeNull()
+  })
+
+  test('nudge抽選でも全角度の回転量を使える', () => {
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.9)
+    const { result } = renderHook(() => useRoulette())
+
+    act(() => {
+      result.current.spin(items, undefined, { nudge: true })
+      vi.advanceTimersByTime(10000)
+    })
+
+    // 0.9 のとき extraRotation は 324 度で、短め演出でも 400 度超の回転になる
+    expect(result.current.rotation).toBeGreaterThan(400)
+    randomSpy.mockRestore()
+  })
+
+  test('移動なしでドラッグ終了したときに前回の慣性速度を再利用しない', () => {
+    const { result } = renderHook(() => useRoulette())
+
+    act(() => {
+      result.current.setDragging(true, items)
+      result.current.addRotationWithVelocity(40, 1000)
+      result.current.addRotationWithVelocity(40, 1050)
+      result.current.setDragging(false, items)
+      vi.advanceTimersByTime(5000)
+    })
+
+    const rotationBeforeIdleRelease = result.current.rotation
+
+    act(() => {
+      result.current.setDragging(true, items)
+      result.current.setDragging(false, items)
+      vi.advanceTimersByTime(200)
+    })
+
+    expect(result.current.rotation).toBe(rotationBeforeIdleRelease)
   })
 
   describe('shiftResult', () => {
