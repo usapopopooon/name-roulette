@@ -38,14 +38,17 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
 
       if (e.key === 'ArrowDown') {
         e.preventDefault()
-        const nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % items.length
+        const nextIndex =
+          currentIndex < 0 ? 0 : (currentIndex + 1) % items.length
         itemRefs.current[nextIndex]?.focus()
       }
 
       if (e.key === 'ArrowUp') {
         e.preventDefault()
         const nextIndex =
-          currentIndex < 0 ? items.length - 1 : (currentIndex - 1 + items.length) % items.length
+          currentIndex < 0
+            ? items.length - 1
+            : (currentIndex - 1 + items.length) % items.length
         itemRefs.current[nextIndex]?.focus()
       }
     }

@@ -286,7 +286,12 @@ export function RouletteWheel({
             strokeWidth="2"
             filter="url(#center-shadow)"
           />
-          <path d="M 145 6 L 175 6 L 160 39 Z" fill="#FFD700" stroke="#FFA000" strokeWidth="2" />
+          <path
+            d="M 145 6 L 175 6 L 160 39 Z"
+            fill="#FFD700"
+            stroke="#FFA000"
+            strokeWidth="2"
+          />
         </g>
       </svg>
     </div>

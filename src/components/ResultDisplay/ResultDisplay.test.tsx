@@ -25,9 +25,7 @@ describe('ResultDisplay', () => {
   })
 
   test('結果文字列をそのまま表示する', () => {
-    render(
-      <ResultDisplay resultId="test-1" resultLabel="テスト太郎さん" />
-    )
+    render(<ResultDisplay resultId="test-1" resultLabel="テスト太郎さん" />)
 
     expect(screen.getByText('テスト太郎さん')).toBeInTheDocument()
   })
@@ -44,7 +42,11 @@ describe('ResultDisplay', () => {
 
   test('onCloseが渡された場合は閉じるボタンを表示する', () => {
     render(
-      <ResultDisplay resultId="tanaka-1" resultLabel="田中さん" onClose={() => {}} />
+      <ResultDisplay
+        resultId="tanaka-1"
+        resultLabel="田中さん"
+        onClose={() => {}}
+      />
     )
 
     expect(screen.getByText('閉じる')).toBeInTheDocument()
@@ -59,7 +61,11 @@ describe('ResultDisplay', () => {
   test('閉じるボタンをクリックするとonCloseが呼ばれる', () => {
     const onClose = vi.fn()
     render(
-      <ResultDisplay resultId="tanaka-1" resultLabel="田中さん" onClose={onClose} />
+      <ResultDisplay
+        resultId="tanaka-1"
+        resultLabel="田中さん"
+        onClose={onClose}
+      />
     )
 
     fireEvent.click(screen.getByText('閉じる'))
@@ -70,7 +76,11 @@ describe('ResultDisplay', () => {
   test('オーバーレイ背景をクリックするとonCloseが呼ばれる', () => {
     const onClose = vi.fn()
     render(
-      <ResultDisplay resultId="tanaka-1" resultLabel="田中さん" onClose={onClose} />
+      <ResultDisplay
+        resultId="tanaka-1"
+        resultLabel="田中さん"
+        onClose={onClose}
+      />
     )
 
     const overlay = document.querySelector('.z-50') as HTMLElement
@@ -82,7 +92,11 @@ describe('ResultDisplay', () => {
   test('モーダル内容をクリックしてもonCloseは呼ばれない', () => {
     const onClose = vi.fn()
     render(
-      <ResultDisplay resultId="tanaka-1" resultLabel="田中さん" onClose={onClose} />
+      <ResultDisplay
+        resultId="tanaka-1"
+        resultLabel="田中さん"
+        onClose={onClose}
+      />
     )
 
     fireEvent.click(screen.getByText('田中さん'))

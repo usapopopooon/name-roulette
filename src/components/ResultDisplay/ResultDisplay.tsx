@@ -26,9 +26,10 @@ export function ResultDisplay({
   onChallenge,
   onShift,
 }: ResultDisplayProps) {
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(
-    null
-  )
+  const [contextMenu, setContextMenu] = useState<{
+    x: number
+    y: number
+  } | null>(null)
   const dialogRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -53,7 +54,9 @@ export function ResultDisplay({
 
   if (!resultId || !resultLabel) return null
 
-  const currentIndex = candidates.findIndex((candidate) => candidate.id === resultId)
+  const currentIndex = candidates.findIndex(
+    (candidate) => candidate.id === resultId
+  )
   const canShift = candidates.length >= 2 && currentIndex !== -1
   const nextIndex = canShift ? (currentIndex + 1) % candidates.length : -1
   const nextCandidate = canShift ? candidates[nextIndex] : null

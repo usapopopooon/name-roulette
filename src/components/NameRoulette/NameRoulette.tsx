@@ -62,10 +62,11 @@ export function NameRoulette() {
   const [interruptionOccurred, setInterruptionOccurred] = useState(false)
 
   const rouletteItems = useMemo<RouletteWheelItem[]>(
-    () => participants.map((participant) => ({
-      id: participant.id,
-      label: participant.displayName,
-    })),
+    () =>
+      participants.map((participant) => ({
+        id: participant.id,
+        label: participant.displayName,
+      })),
     [participants]
   )
   const resultCandidates = useMemo<ResultCandidate[]>(
@@ -73,7 +74,8 @@ export function NameRoulette() {
     [rouletteItems]
   )
   const participantMap = useMemo(
-    () => new Map(participants.map((participant) => [participant.id, participant])),
+    () =>
+      new Map(participants.map((participant) => [participant.id, participant])),
     [participants]
   )
 
@@ -106,7 +108,7 @@ export function NameRoulette() {
     shiftResult,
   } = useRoulette()
 
-  const resultParticipant = result ? participantMap.get(result) ?? null : null
+  const resultParticipant = result ? (participantMap.get(result) ?? null) : null
   const resultLabel = resultParticipant?.displayName ?? null
 
   const { copyShareLink } = useURLSync({
@@ -139,7 +141,9 @@ export function NameRoulette() {
 
   const handleStart = () => {
     if (lastWinner.id && rouletteItems.length >= 3) {
-      const winnerIndex = rouletteItems.findIndex((item) => item.id === lastWinner.id)
+      const winnerIndex = rouletteItems.findIndex(
+        (item) => item.id === lastWinner.id
+      )
       if (winnerIndex !== -1 && weights[winnerIndex] > 0) {
         setShowExcludeConfirm(true)
         return
@@ -282,7 +286,11 @@ export function NameRoulette() {
               >
                 {isSpinning ? '回転中...' : 'スタート！'}
               </ActionButton>
-              <ActionButton type="button" variant="secondary" onClick={handleFullReset}>
+              <ActionButton
+                type="button"
+                variant="secondary"
+                onClick={handleFullReset}
+              >
                 リセット
               </ActionButton>
             </div>

@@ -35,7 +35,8 @@ export interface UseNameListReturn {
   resetWeights: () => void
 }
 
-const normalizeName = (value: string): string => value.trim().replace(/さん$/, '')
+const normalizeName = (value: string): string =>
+  value.trim().replace(/さん$/, '')
 
 const parseNames = (value: string): string[] => {
   return value
@@ -190,7 +191,9 @@ export function useNameList(
   const updateNames = (nextRawNames: string) => {
     setRawNames(nextRawNames)
     const nextNames = parseNames(nextRawNames)
-    setEntries((prevEntries) => reconcileEntries(prevEntries, nextNames, createId))
+    setEntries((prevEntries) =>
+      reconcileEntries(prevEntries, nextNames, createId)
+    )
   }
 
   const handleNamesChange = (newValue: string) => {
