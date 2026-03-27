@@ -16,7 +16,12 @@
     "twmerge",
     "unstub",
     "Kosugi",
-    "Maru"
+    "Maru",
+    "tanaka",
+    "sato",
+    "suzuki",
+    "yamada",
+    "Tanaka"
   ],
   "ignorePaths": [
     "node_modules",
