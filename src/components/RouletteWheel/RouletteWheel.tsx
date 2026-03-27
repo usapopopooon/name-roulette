@@ -196,6 +196,16 @@ export function RouletteWheel({
           <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
             <feDropShadow dx="0" dy="4" stdDeviation="8" floodOpacity="0.3" />
           </filter>
+          <filter
+            id="center-shadow"
+            x="132"
+            y="132"
+            width="56"
+            height="56"
+            filterUnits="userSpaceOnUse"
+          >
+            <feDropShadow dx="0" dy="3" stdDeviation="4" floodOpacity="0.25" />
+          </filter>
         </defs>
 
         <g
@@ -266,8 +276,16 @@ export function RouletteWheel({
           })}
         </g>
 
-        <g filter="url(#shadow)">
-          <circle cx={centerX} cy={centerY} r="20" fill="#fff" stroke="#ddd" strokeWidth="2" />
+        <g>
+          <circle
+            cx={centerX}
+            cy={centerY}
+            r="20"
+            fill="#fff"
+            stroke="#ddd"
+            strokeWidth="2"
+            filter="url(#center-shadow)"
+          />
           <path d="M 145 6 L 175 6 L 160 39 Z" fill="#FFD700" stroke="#FFA000" strokeWidth="2" />
         </g>
       </svg>
