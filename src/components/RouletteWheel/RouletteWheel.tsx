@@ -24,8 +24,13 @@ const COLORS = [
   '#AD1457',
 ]
 
+export interface RouletteWheelItem {
+  id: string
+  label: string
+}
+
 export interface RouletteWheelProps {
-  items: string[]
+  items: RouletteWheelItem[]
   weights?: number[]
   rotation: number
   size?: number
@@ -33,7 +38,7 @@ export interface RouletteWheelProps {
   onDragRotate?: (delta: number, timestamp: number) => void
   onDragStart?: () => void
   onDragEnd?: () => void
-  onContextMenu?: (name: string, x: number, y: number) => void
+  onContextMenu?: (item: RouletteWheelItem, x: number, y: number) => void
 }
 
 export function RouletteWheel({
@@ -51,14 +56,12 @@ export function RouletteWheel({
   const isDraggingRef = useRef(false)
   const lastSegmentIndexRef = useRef<number | null>(null)
 
-  // 重みから各セグメントの角度を計算
   const segmentAngles = useMemo(() => {
     const w = weights || items.map(() => 1)
     const totalWeight = w.reduce((sum, weight) => sum + weight, 0)
     return w.map((weight) => (weight / totalWeight) * 360)
   }, [items, weights])
 
-  // 各セグメントの開始角度を計算
   const startAngles = useMemo(() => {
     const angles: number[] = []
     let currentAngle = -90
@@ -69,12 +72,9 @@ export function RouletteWheel({
     return angles
   }, [segmentAngles])
 
-  // 回転中にセグメントを通過したらカチカチ音を鳴らす
   useEffect(() => {
     if (items.length < 2) return
 
-    // 矢印（上部）が指しているセグメントを計算
-    // 矢印は-90度の位置にあるので、回転を加味して現在どのセグメントが当たっているか判定
     const pointerAngle = (-rotation - 90 + 360 * 1000) % 360
 
     let accumulatedAngle = 0
@@ -87,7 +87,6 @@ export function RouletteWheel({
       }
     }
 
-    // セグメントが変わったら音を鳴らす
     if (
       lastSegmentIndexRef.current !== null &&
       lastSegmentIndexRef.current !== currentSegmentIndex
@@ -120,11 +119,12 @@ export function RouletteWheel({
       !isDraggingRef.current ||
       !onDragRotate ||
       lastAngleRef.current === null
-    )
+    ) {
       return
+    }
+
     const currentAngle = getAngleFromCenter(e.clientX, e.clientY)
     let delta = currentAngle - lastAngleRef.current
-    // -180〜180の範囲に正規化
     if (delta > 180) delta -= 360
     if (delta < -180) delta += 360
     onDragRotate(delta, performance.now())
@@ -139,24 +139,18 @@ export function RouletteWheel({
     lastAngleRef.current = null
   }
 
-  // 右クリック時にどのセグメントがクリックされたかを判定
   const handleContextMenu = (e: React.MouseEvent) => {
     if (!onContextMenu) return
 
     e.preventDefault()
 
-    // クリック位置から角度を計算
     const clickAngle = getAngleFromCenter(e.clientX, e.clientY)
-    // 現在の回転を考慮して調整（回転の逆方向に補正）
     let adjustedAngle = clickAngle - rotation
-    // 0-360に正規化
     adjustedAngle = ((adjustedAngle % 360) + 360) % 360
 
-    // どのセグメントがクリックされたかを判定
     let accumulatedAngle = 0
     for (let i = 0; i < items.length; i++) {
       accumulatedAngle += segmentAngles[i]
-      // startAnglesは-90から始まるので、adjustedAngleも-90基準に変換
       const normalizedClickAngle = (((adjustedAngle + 90) % 360) + 360) % 360
       if (normalizedClickAngle < accumulatedAngle) {
         onContextMenu(items[i], e.clientX, e.clientY)
@@ -208,7 +202,7 @@ export function RouletteWheel({
           transform={`rotate(${rotation}, ${centerX}, ${centerY})`}
           filter="url(#shadow)"
         >
-          {items.map((name, index) => {
+          {items.map((item, index) => {
             const startAngle = startAngles[index]
             const segmentAngle = segmentAngles[index]
             const endAngle = startAngle + segmentAngle
@@ -238,12 +232,12 @@ export function RouletteWheel({
             const normalizedAngle = ((textAngle % 360) + 360) % 360
             const isLeftSide = normalizedAngle > 90 && normalizedAngle < 270
             const textRotation = isLeftSide ? textAngle + 180 : textAngle
-
-            // セグメントが小さすぎる場合はテキストを表示しない
             const showText = segmentAngle > 10
+            const displayLabel =
+              item.label.length > 8 ? `${item.label.slice(0, 8)}…` : item.label
 
             return (
-              <g key={index}>
+              <g key={item.id}>
                 <path
                   d={pathD}
                   fill={COLORS[index % COLORS.length]}
@@ -262,37 +256,19 @@ export function RouletteWheel({
                     textAnchor="middle"
                     dominantBaseline="middle"
                     transform={`rotate(${textRotation}, ${textX}, ${textY})`}
-                    className="[text-shadow:1px_1px_2px_rgba(0,0,0,0.7)] pointer-events-none"
+                    style={{ userSelect: 'none', pointerEvents: 'none' }}
                   >
-                    {name.length > 8 ? name.slice(0, 8) + '…' : name}
+                    {displayLabel}
                   </text>
                 )}
               </g>
             )
           })}
-
-          <circle
-            cx={centerX}
-            cy={centerY}
-            r="25"
-            fill="#1a1a2e"
-            stroke="#ffd700"
-            strokeWidth="3"
-          />
-          <circle cx={centerX} cy={centerY} r="15" fill="#ffd700" />
         </g>
 
         <g filter="url(#shadow)">
-          <polygon
-            points={`${centerX - 15},12 ${centerX + 15},12 ${centerX},45`}
-            fill="#ffd700"
-            stroke="#fff"
-            strokeWidth="2"
-          />
-          <polygon
-            points={`${centerX - 10},8 ${centerX + 10},8 ${centerX},32`}
-            fill="#ffec8b"
-          />
+          <circle cx={centerX} cy={centerY} r="20" fill="#fff" stroke="#ddd" strokeWidth="2" />
+          <path d="M 145 6 L 175 6 L 160 39 Z" fill="#FFD700" stroke="#FFA000" strokeWidth="2" />
         </g>
       </svg>
     </div>

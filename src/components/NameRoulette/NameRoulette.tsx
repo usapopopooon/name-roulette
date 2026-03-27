@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
-import { RouletteWheel } from '../RouletteWheel'
+import { useEffect, useMemo, useState } from 'react'
+import { RouletteWheel, type RouletteWheelItem } from '../RouletteWheel'
 import { NameInput } from '../NameInput'
-import { ResultDisplay } from '../ResultDisplay'
+import { ResultDisplay, type ResultCandidate } from '../ResultDisplay'
 import { ActionButton } from '../ActionButton'
 import { Checkbox } from '../Checkbox'
 import { ShareButton } from '../ShareButton'
@@ -18,11 +18,16 @@ import {
   getLastWinnerFromURL,
 } from '../../hooks'
 
+interface WinnerState {
+  id: string | null
+  label: string | null
+}
+
 export function NameRoulette() {
   const {
     rawNames,
     nameList,
-    displayNameList,
+    participants,
     weights,
     withHonorific,
     setWithHonorific,
@@ -35,29 +40,60 @@ export function NameRoulette() {
     resetWeights,
   } = useNameList()
 
-  // 前回の当選者を記録（URLから初期化）
-  const [lastWinner, setLastWinner] = useState<string | null>(() =>
-    getLastWinnerFromURL()
+  const initialLastWinnerLabel = getLastWinnerFromURL()
+  const [lastWinner, setLastWinner] = useState<WinnerState>({
+    id: null,
+    label: initialLastWinnerLabel,
+  })
+  const [challengedPersonId, setChallengedPersonId] = useState<string | null>(
+    null
   )
-  // 「待った」で重みが半分になった人（次の「待った」時に復活させる）
-  const [challengedPerson, setChallengedPerson] = useState<string | null>(null)
-  // 除外確認ダイアログの表示状態
   const [showExcludeConfirm, setShowExcludeConfirm] = useState(false)
-  // 「待った」確認ダイアログの表示状態
   const [showChallengeConfirm, setShowChallengeConfirm] = useState(false)
-  // コンテキストメニューの状態
   const [contextMenu, setContextMenu] = useState<{
-    name: string
+    id: string
+    label: string
     x: number
     y: number
   } | null>(null)
-  // 乱入演出の状態（null = なし、'cat' or 'duck' = 乱入中）
   const [interruptionType, setInterruptionType] =
     useState<InterruptionType | null>(null)
-  // 乱入判定済みフラグ（同じ結果で複数回判定しないため）
   const [interruptionChecked, setInterruptionChecked] = useState(false)
-  // 乱入が一度発生したフラグ（連続で発生しないように）
   const [interruptionOccurred, setInterruptionOccurred] = useState(false)
+
+  const rouletteItems = useMemo<RouletteWheelItem[]>(
+    () => participants.map((participant) => ({
+      id: participant.id,
+      label: participant.displayName,
+    })),
+    [participants]
+  )
+  const resultCandidates = useMemo<ResultCandidate[]>(
+    () => rouletteItems,
+    [rouletteItems]
+  )
+  const participantMap = useMemo(
+    () => new Map(participants.map((participant) => [participant.id, participant])),
+    [participants]
+  )
+
+  useEffect(() => {
+    if (!lastWinner.label || lastWinner.id) {
+      return
+    }
+
+    const normalizedLastWinner = lastWinner.label.replace(/さん$/, '')
+    const matchedParticipant = participants.find(
+      (participant) => participant.name === normalizedLastWinner
+    )
+
+    if (matchedParticipant) {
+      setLastWinner({
+        id: matchedParticipant.id,
+        label: matchedParticipant.displayName,
+      })
+    }
+  }, [lastWinner, participants])
 
   const {
     isSpinning,
@@ -70,166 +106,142 @@ export function NameRoulette() {
     shiftResult,
   } = useRoulette()
 
+  const resultParticipant = result ? participantMap.get(result) ?? null : null
+  const resultLabel = resultParticipant?.displayName ?? null
+
   const { copyShareLink } = useURLSync({
     names: rawNames,
     withHonorific,
-    lastWinner,
+    lastWinner: lastWinner.label,
   })
 
-  // 結果が出たら60%の確率で乱入（猫30%、アヒル30%）（一度発生したら連続で発生しない）
   useEffect(() => {
     if (result && !isSpinning && !interruptionChecked) {
       setInterruptionChecked(true)
       if (!interruptionOccurred && Math.random() < 0.6) {
-        // 猫とアヒルを50%ずつ
         const type: InterruptionType = Math.random() < 0.5 ? 'cat' : 'duck'
         setInterruptionType(type)
         setInterruptionOccurred(true)
       }
     }
-    // 結果がリセットされたらフラグもリセット
     if (!result) {
       setInterruptionChecked(false)
     }
   }, [result, isSpinning, interruptionChecked, interruptionOccurred])
 
-  // 乱入演出完了後の処理
   const handleInterruptionComplete = () => {
     setInterruptionType(null)
     reset()
-    // 少し遅延してから再スピン（ちょっとだけ回す）
     setTimeout(() => {
-      spin(displayNameList, weights, { nudge: true })
+      spin(rouletteItems, weights, { nudge: true })
     }, 100)
   }
 
-  // スタートボタンのハンドラ
   const handleStart = () => {
-    // 前回の当選者がいて、まだ除外されていない場合は確認ダイアログを表示
-    // ただし、除外すると2人未満になる場合は確認しない
-    if (lastWinner && displayNameList.length >= 3) {
-      const baseName = lastWinner.replace(/さん$/, '')
-      const winnerIndex = nameList.indexOf(baseName)
-      // 当選者がまだリストにいて、重みが0でない場合のみ確認
+    if (lastWinner.id && rouletteItems.length >= 3) {
+      const winnerIndex = rouletteItems.findIndex((item) => item.id === lastWinner.id)
       if (winnerIndex !== -1 && weights[winnerIndex] > 0) {
         setShowExcludeConfirm(true)
         return
       }
     }
-    spin(displayNameList, weights)
+    spin(rouletteItems, weights)
   }
 
-  // 除外して開始
   const handleExcludeAndStart = () => {
-    if (lastWinner) {
-      const newWeights = excludeName(lastWinner)
+    if (lastWinner.id) {
+      const newWeights = excludeName(lastWinner.id)
       setShowExcludeConfirm(false)
-      spin(displayNameList, newWeights)
+      spin(rouletteItems, newWeights)
     }
   }
 
-  // 除外せずに開始
   const handleStartWithoutExclude = () => {
     setShowExcludeConfirm(false)
-    spin(displayNameList, weights)
+    spin(rouletteItems, weights)
   }
 
   const handleDragStart = () => {
-    setDragging(true, displayNameList, weights)
+    setDragging(true, rouletteItems, weights)
   }
 
   const handleDragEnd = () => {
-    setDragging(false, displayNameList, weights)
+    setDragging(false, rouletteItems, weights)
   }
 
-  // 完全リセット（リセットボタン用）
   const handleFullReset = () => {
     reset()
     resetWeights()
-    setLastWinner(null)
-    setChallengedPerson(null)
+    setLastWinner({ id: null, label: null })
+    setChallengedPersonId(null)
   }
 
-  // 結果画面を閉じる（当選者を記録して次回の確認に使う）
   const handleCloseResult = () => {
-    if (result) {
-      // 前回の除外者がいれば復活させる（前々回以前は除外しない）
-      if (lastWinner) {
-        restoreName(lastWinner)
+    if (result && resultLabel) {
+      if (lastWinner.id) {
+        restoreName(lastWinner.id)
       }
-      // 「待った」で半分になった人も復活させる
-      if (challengedPerson) {
-        restoreName(challengedPerson)
-        setChallengedPerson(null)
+      if (challengedPersonId) {
+        restoreName(challengedPersonId)
+        setChallengedPersonId(null)
       }
-      setLastWinner(result)
+      setLastWinner({ id: result, label: resultLabel })
     }
-    // 次のターンでは乱入の出現確率をリセット
     setInterruptionOccurred(false)
     reset()
   }
 
-  // 「待った」ボタンを押した時（確認ダイアログを表示）
   const handleChallenge = () => {
     if (result) {
       setShowChallengeConfirm(true)
     }
   }
 
-  // 「待った」確認で「はい」を選んだ時
   const handleChallengeConfirm = () => {
     if (result) {
-      // 前回「待った」された人がいれば復活させる
-      if (challengedPerson && challengedPerson !== result) {
-        restoreName(challengedPerson)
+      if (challengedPersonId && challengedPersonId !== result) {
+        restoreName(challengedPersonId)
       }
-      // 当選者の重みを半分にして再抽選（halveWeightは更新後のweightsを返す）
       const newWeights = halveWeight(result)
-      setChallengedPerson(result)
+      setChallengedPersonId(result)
       setShowChallengeConfirm(false)
-      // 動物乱入の確率をリセット
       setInterruptionOccurred(false)
       reset()
-      // 少し遅延してから再スピン
       setTimeout(() => {
-        spin(displayNameList, newWeights)
+        spin(rouletteItems, newWeights)
       }, 100)
     }
   }
 
-  // 「待った」確認で「いいえ」を選んだ時（確率変更なしで再抽選）
   const handleChallengeCancel = () => {
     setShowChallengeConfirm(false)
-    // 動物乱入の確率をリセット
     setInterruptionOccurred(false)
     reset()
-    // 少し遅延してから再スピン
     setTimeout(() => {
-      spin(displayNameList, weights)
+      spin(rouletteItems, weights)
     }, 100)
   }
 
-  // 当選者を前後にシフト
   const handleShiftResult = (direction: -1 | 1) => {
-    shiftResult(direction, displayNameList, weights)
+    shiftResult(direction, rouletteItems, weights)
   }
 
-  // コンテキストメニューを開く
-  const handleRouletteContextMenu = (name: string, x: number, y: number) => {
+  const handleRouletteContextMenu = (
+    item: RouletteWheelItem,
+    x: number,
+    y: number
+  ) => {
     if (!isSpinning) {
-      setContextMenu({ name, x, y })
+      setContextMenu({ id: item.id, label: item.label, x, y })
     }
   }
 
-  // コンテキストメニューを閉じる
   const handleCloseContextMenu = () => {
     setContextMenu(null)
   }
 
-  // 名前リストをシャッフル
   const handleShuffle = () => {
     const lines = rawNames.split('\n').filter((line) => line.trim() !== '')
-    // Fisher-Yates shuffle
     for (let i = lines.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
       ;[lines[i], lines[j]] = [lines[j], lines[i]]
@@ -238,6 +250,7 @@ export function NameRoulette() {
   }
 
   const canStart = nameList.length >= 2 && !isSpinning
+  const excludeLabel = lastWinner.label ?? ''
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-tertiary p-5 font-['Segoe_UI','Hiragino_Sans',sans-serif] text-white">
@@ -249,7 +262,7 @@ export function NameRoulette() {
         <div className="flex gap-4 items-start max-md:flex-col max-md:items-center">
           <div className="flex flex-col items-center gap-4 max-md:w-full max-md:[&>div:first-child]:!w-80 max-md:[&>div:first-child]:!h-80">
             <RouletteWheel
-              items={displayNameList}
+              items={rouletteItems}
               weights={weights}
               rotation={rotation}
               size={640}
@@ -262,13 +275,14 @@ export function NameRoulette() {
 
             <div className="flex gap-4 flex-wrap justify-center">
               <ActionButton
+                type="button"
                 variant="primary"
                 onClick={handleStart}
                 disabled={!canStart}
               >
                 {isSpinning ? '回転中...' : 'スタート！'}
               </ActionButton>
-              <ActionButton variant="secondary" onClick={handleFullReset}>
+              <ActionButton type="button" variant="secondary" onClick={handleFullReset}>
                 リセット
               </ActionButton>
             </div>
@@ -295,11 +309,11 @@ export function NameRoulette() {
         </div>
       </div>
 
-      {/* 乱入判定が完了し、乱入でない場合のみ結果を表示（乱入時はファンファーレを鳴らさない） */}
       {interruptionChecked && !interruptionType && (
         <ResultDisplay
-          result={result}
-          candidates={displayNameList}
+          resultId={result}
+          resultLabel={resultLabel}
+          candidates={resultCandidates}
           onClose={handleCloseResult}
           onChallenge={handleChallenge}
           onShift={handleShiftResult}
@@ -312,17 +326,17 @@ export function NameRoulette() {
         onComplete={handleInterruptionComplete}
       />
 
-      {showExcludeConfirm && lastWinner && (
+      {showExcludeConfirm && lastWinner.id && (
         <ConfirmDialog
-          message={`前回の当選者「${lastWinner}」を\n除外しますか？`}
+          message={`前回の当選者「${excludeLabel}」を\n除外しますか？`}
           onYes={handleExcludeAndStart}
           onNo={handleStartWithoutExclude}
         />
       )}
 
-      {showChallengeConfirm && result && (
+      {showChallengeConfirm && resultLabel && (
         <ConfirmDialog
-          message={`「${result}」の当選確率を\n下げますか？`}
+          message={`「${resultLabel}」の当選確率を\n下げますか？`}
           onYes={handleChallengeConfirm}
           onNo={handleChallengeCancel}
         />
@@ -334,12 +348,12 @@ export function NameRoulette() {
           y={contextMenu.y}
           items={[
             {
-              label: `「${contextMenu.name}」の確率を倍にする`,
-              onClick: () => doubleWeight(contextMenu.name),
+              label: `「${contextMenu.label}」の確率を倍にする`,
+              onClick: () => doubleWeight(contextMenu.id),
             },
             {
-              label: `「${contextMenu.name}」を削除`,
-              onClick: () => removeName(contextMenu.name),
+              label: `「${contextMenu.label}」を削除`,
+              onClick: () => removeName(contextMenu.id),
               danger: true,
             },
           ]}

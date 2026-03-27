@@ -25,9 +25,12 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
+const createItems = (labels: string[]) =>
+  labels.map((label, index) => ({ id: `item-${index}`, label }))
+
 export const Default: Story = {
   args: {
-    items: ['田中さん', '佐藤さん', '鈴木さん', '高橋さん'],
+    items: createItems(['田中さん', '佐藤さん', '鈴木さん', '高橋さん']),
     rotation: 0,
     size: 320,
   },
@@ -35,7 +38,7 @@ export const Default: Story = {
 
 export const ManyItems: Story = {
   args: {
-    items: [
+    items: createItems([
       '田中さん',
       '佐藤さん',
       '鈴木さん',
@@ -48,7 +51,7 @@ export const ManyItems: Story = {
       '加藤さん',
       '吉田さん',
       '山田さん',
-    ],
+    ]),
     rotation: 0,
     size: 320,
   },
@@ -56,7 +59,7 @@ export const ManyItems: Story = {
 
 export const TwoItems: Story = {
   args: {
-    items: ['Aさん', 'Bさん'],
+    items: createItems(['Aさん', 'Bさん']),
     rotation: 0,
     size: 320,
   },
@@ -72,7 +75,7 @@ export const Empty: Story = {
 
 export const Rotated: Story = {
   args: {
-    items: ['田中さん', '佐藤さん', '鈴木さん', '高橋さん'],
+    items: createItems(['田中さん', '佐藤さん', '鈴木さん', '高橋さん']),
     rotation: 45,
     size: 320,
   },
@@ -80,7 +83,7 @@ export const Rotated: Story = {
 
 export const LargeSize: Story = {
   args: {
-    items: ['田中さん', '佐藤さん', '鈴木さん', '高橋さん'],
+    items: createItems(['田中さん', '佐藤さん', '鈴木さん', '高橋さん']),
     rotation: 0,
     size: 500,
   },
@@ -88,7 +91,7 @@ export const LargeSize: Story = {
 
 export const SmallSize: Story = {
   args: {
-    items: ['田中さん', '佐藤さん', '鈴木さん', '高橋さん'],
+    items: createItems(['田中さん', '佐藤さん', '鈴木さん', '高橋さん']),
     rotation: 0,
     size: 200,
   },

@@ -1,2 +1,2 @@
 export { RouletteWheel } from './RouletteWheel'
-export type { RouletteWheelProps } from './RouletteWheel'
+export type { RouletteWheelItem, RouletteWheelProps } from './RouletteWheel'

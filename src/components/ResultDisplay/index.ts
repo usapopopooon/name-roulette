@@ -1,2 +1,5 @@
 export { ResultDisplay } from './ResultDisplay'
-export type { ResultDisplayProps } from './ResultDisplay'
+export type {
+  ResultCandidate,
+  ResultDisplayProps,
+} from './ResultDisplay'

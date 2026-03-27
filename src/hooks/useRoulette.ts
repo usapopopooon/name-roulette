@@ -1,7 +1,12 @@
 import { useState, useRef } from 'react'
 
+export interface RouletteItem {
+  id: string
+  label: string
+}
+
 export interface UseRouletteOptions {
-  onComplete?: (winner: string) => void
+  onComplete?: (winnerId: string) => void
 }
 
 export interface SpinOptions {
@@ -13,12 +18,16 @@ export interface UseRouletteReturn {
   isSpinning: boolean
   rotation: number
   result: string | null
-  spin: (items: string[], weights?: number[], options?: SpinOptions) => void
+  spin: (items: RouletteItem[], weights?: number[], options?: SpinOptions) => void
   reset: () => void
   addRotationWithVelocity: (delta: number, timestamp: number) => void
-  setDragging: (dragging: boolean, items: string[], weights?: number[]) => void
+  setDragging: (dragging: boolean, items: RouletteItem[], weights?: number[]) => void
   /** 結果を前後の候補にシフト（direction: -1 = 前, 1 = 次） */
-  shiftResult: (direction: -1 | 1, items: string[], weights?: number[]) => void
+  shiftResult: (
+    direction: -1 | 1,
+    items: RouletteItem[],
+    weights?: number[]
+  ) => void
 }
 
 export function useRoulette(
@@ -30,22 +39,17 @@ export function useRoulette(
   const [rotation, setRotation] = useState(0)
   const animationRef = useRef<number | null>(null)
   const isDraggingRef = useRef(false)
-  const pendingItemsRef = useRef<string[] | null>(null)
+  const pendingItemsRef = useRef<RouletteItem[] | null>(null)
   const pendingWeightsRef = useRef<number[] | null>(null)
   const resultRef = useRef<string | null>(null)
 
-  // resultが変わったらrefも更新
   resultRef.current = result
 
-  // 速度追跡用
   const velocityRef = useRef(0)
-  const lastDeltaTimeRef = useRef(0)
   const recentDeltasRef = useRef<{ delta: number; time: number }[]>([])
 
-  // 重みを考慮して勝者を決定
-  // finalRotationを直接受け取ることで、クロージャの古い値問題を回避
   const determineWinner = (
-    items: string[],
+    items: RouletteItem[],
     weights?: number[],
     finalRotation?: number
   ) => {
@@ -53,17 +57,13 @@ export function useRoulette(
 
     setIsSpinning(false)
 
-    // 重みから各セグメントの角度を計算
     const w = weights || items.map(() => 1)
     const totalWeight = w.reduce((sum, weight) => sum + weight, 0)
     const segmentAngles = w.map((weight) => (weight / totalWeight) * 360)
 
-    // finalRotationが渡された場合はそれを使用（アニメーション終了時の正確な値）
-    // セグメントは-90度から描画開始されているため、ここでは-90オフセット不要
     const rotationToUse = finalRotation ?? rotation
     const pointerAngle = (-rotationToUse + 360 * 1000) % 360
 
-    // どのセグメントがポインターの下にあるか
     let accumulatedAngle = 0
     let winnerIndex = 0
     for (let i = 0; i < segmentAngles.length; i++) {
@@ -74,19 +74,19 @@ export function useRoulette(
       }
     }
 
-    const winner = items[winnerIndex]
-    setResult(winner)
-    onComplete?.(winner)
+    const winnerId = items[winnerIndex]?.id ?? null
+    setResult(winnerId)
+    if (winnerId) {
+      onComplete?.(winnerId)
+    }
   }
 
-  // 慣性アニメーション - 最後がじわじわゆっくりになる
   const startInertiaAnimation = (
     initialVelocity: number,
-    items: string[],
+    items: RouletteItem[],
     weights?: number[]
   ) => {
     if (Math.abs(initialVelocity) < 0.5) {
-      // 速度が小さすぎる場合は慣性なしで即座に勝者決定
       if (pendingItemsRef.current) {
         const pendingItems = pendingItemsRef.current
         const pendingWeights = pendingWeightsRef.current
@@ -97,16 +97,14 @@ export function useRoulette(
       return
     }
 
-    // 初期速度から総回転量と所要時間を計算
-    const totalRotation = initialVelocity * 60 // 速度に比例した回転量（少し増加）
-    const duration = Math.min(Math.abs(initialVelocity) * 300, 7000) // 速度に比例した時間（最大7秒）
+    const totalRotation = initialVelocity * 60
+    const duration = Math.min(Math.abs(initialVelocity) * 300, 7000)
     let startTime: number | null = null
     let startRotation = 0
 
     const animate = (timestamp: number) => {
       if (!startTime) {
         startTime = timestamp
-        // 現在の回転角度を取得
         setRotation((prev) => {
           startRotation = prev
           return prev
@@ -115,11 +113,7 @@ export function useRoulette(
 
       const elapsed = timestamp - startTime
       const progress = Math.min(elapsed / duration, 1)
-
-      // ease-out-quint: 終盤が滑らかに1に収束するイージング
-      // 1 - (1 - progress)^5 で progress=1 の時に正確に 1 になる
       const eased = 1 - Math.pow(1 - progress, 5)
-
       const currentRotation = startRotation + totalRotation * eased
 
       setRotation(currentRotation)
@@ -128,9 +122,7 @@ export function useRoulette(
         animationRef.current = requestAnimationFrame(animate)
       } else {
         animationRef.current = null
-        // 最終回転角度を計算
         const finalRotation = startRotation + totalRotation
-        // ドラッグ中でなければ勝者決定
         if (!isDraggingRef.current) {
           if (pendingItemsRef.current) {
             const pendingItems = pendingItemsRef.current
@@ -153,7 +145,7 @@ export function useRoulette(
   }
 
   const spin = (
-    items: string[],
+    items: RouletteItem[],
     weights?: number[],
     spinOptions?: SpinOptions
   ) => {
@@ -170,30 +162,23 @@ export function useRoulette(
     let duration: number
 
     if (spinOptions?.nudge) {
-      // ちょっとだけ回す（動物乱入後用）- ゆっくり回転
-      totalSpins = 0.5 + Math.random() * 0.5 // 0.5〜1回転
+      totalSpins = 0.5 + Math.random() * 0.5
       extraRotation = 30 + Math.random() * 120
-      duration = 2500 + Math.random() * 1000 // 2.5〜3.5秒
+      duration = 2500 + Math.random() * 1000
     } else {
-      // 通常のスピン
       totalSpins = 5 + Math.random() * 3
       extraRotation = Math.random() * 360
-      duration = 6000 + Math.random() * 2000 // 6〜8秒
+      duration = 6000 + Math.random() * 2000
     }
 
     const finalRotation = startRotation + totalSpins * 360 + extraRotation
-
     let startTime: number | null = null
 
     const animate = (timestamp: number) => {
       if (!startTime) startTime = timestamp
       const elapsed = timestamp - startTime
       const progress = Math.min(elapsed / duration, 1)
-
-      // ease-out-quint: 終盤が滑らかに1に収束するイージング
-      // 1 - (1 - progress)^5 で progress=1 の時に正確に 1 になる
       const eased = 1 - Math.pow(1 - progress, 5)
-
       const currentRotation =
         startRotation + (finalRotation - startRotation) * eased
 
@@ -201,15 +186,11 @@ export function useRoulette(
 
       if (progress < 1) {
         animationRef.current = requestAnimationFrame(animate)
+      } else if (isDraggingRef.current) {
+        pendingItemsRef.current = items
+        pendingWeightsRef.current = weights || null
       } else {
-        // ドラッグ中なら勝者決定を保留
-        if (isDraggingRef.current) {
-          pendingItemsRef.current = items
-          pendingWeightsRef.current = weights || null
-        } else {
-          // 最終回転角度を直接渡す
-          determineWinner(items, weights, finalRotation)
-        }
+        determineWinner(items, weights, finalRotation)
       }
     }
 
@@ -230,87 +211,76 @@ export function useRoulette(
   }
 
   const addRotationWithVelocity = (delta: number, timestamp: number) => {
-    // 直近のデルタを記録（100ms以内のものだけ保持）
     recentDeltasRef.current.push({ delta, time: timestamp })
     recentDeltasRef.current = recentDeltasRef.current.filter(
       (d) => timestamp - d.time < 100
     )
-    lastDeltaTimeRef.current = timestamp
 
     setRotation((prev) => prev + delta)
   }
 
   const setDragging = (
     dragging: boolean,
-    items: string[],
+    items: RouletteItem[],
     weights?: number[]
   ) => {
     const wasDragging = isDraggingRef.current
     isDraggingRef.current = dragging
 
     if (dragging) {
-      // ドラッグ開始時にアニメーションを停止
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
         animationRef.current = null
       }
       recentDeltasRef.current = []
     } else if (wasDragging) {
-      // ドラッグ終了時に速度を計算
       const now = performance.now()
       const recentDeltas = recentDeltasRef.current.filter(
         (d) => now - d.time < 100
       )
 
       if (recentDeltas.length >= 2) {
-        // 直近のデルタから速度を計算
         const totalDelta = recentDeltas.reduce((sum, d) => sum + d.delta, 0)
         const timeSpan =
           recentDeltas[recentDeltas.length - 1].time - recentDeltas[0].time
         if (timeSpan > 0) {
-          velocityRef.current = (totalDelta / timeSpan) * 16 // 16ms単位の速度に変換
+          velocityRef.current = (totalDelta / timeSpan) * 16
         }
       }
 
       recentDeltasRef.current = []
-
-      // 慣性アニメーションを開始
       startInertiaAnimation(velocityRef.current, items, weights)
     }
   }
 
-  // 結果を前後の候補にシフト（ループする）
   const shiftResult = (
     direction: -1 | 1,
-    items: string[],
+    items: RouletteItem[],
     weights?: number[]
   ) => {
     const currentResult = resultRef.current
     if (!currentResult || items.length < 2) return
 
-    const currentIndex = items.indexOf(currentResult)
+    const currentIndex = items.findIndex((item) => item.id === currentResult)
     if (currentIndex === -1) return
 
-    // ループするインデックス計算
     const newIndex = (currentIndex + direction + items.length) % items.length
+    const newWinnerId = items[newIndex]?.id
+    if (!newWinnerId) return
 
-    const newWinner = items[newIndex]
-    setResult(newWinner)
-    onComplete?.(newWinner)
+    setResult(newWinnerId)
+    onComplete?.(newWinnerId)
 
-    // ルーレットの回転角度も新しい当選者の位置に合わせて調整
     const w = weights || items.map(() => 1)
     const totalWeight = w.reduce((sum, weight) => sum + weight, 0)
     const segmentAngles = w.map((weight) => (weight / totalWeight) * 360)
 
-    // 新しい当選者の中心角度を計算
     let targetAngle = 0
     for (let i = 0; i < newIndex; i++) {
       targetAngle += segmentAngles[i]
     }
-    targetAngle += segmentAngles[newIndex] / 2 // セグメントの中心
+    targetAngle += segmentAngles[newIndex] / 2
 
-    // 回転角度を設定（ポインターは上部=-90度なので調整）
     setRotation(-targetAngle)
   }
 

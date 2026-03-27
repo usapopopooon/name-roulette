@@ -24,7 +24,7 @@ export function Checkbox({
     >
       <CheckboxPrimitive.Root
         checked={checked}
-        onCheckedChange={onChange}
+        onCheckedChange={(value) => onChange(value === true)}
         disabled={disabled}
         className={cn(
           'h-[22px] w-[22px] shrink-0 rounded-md border-2 border-purple-start',

@@ -9,6 +9,14 @@ describe('NameInput', () => {
     expect(screen.getByText('参加者（改行区切り）')).toBeInTheDocument()
   })
 
+  it('should associate label with textarea', () => {
+    render(<NameInput value="" onChange={() => {}} count={0} />)
+
+    expect(screen.getByLabelText('参加者（改行区切り）')).toBe(
+      screen.getByRole('textbox')
+    )
+  })
+
   it('should render textarea with value', () => {
     render(<NameInput value={'田中\n佐藤'} onChange={() => {}} count={2} />)
 

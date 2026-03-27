@@ -16,21 +16,24 @@ type Story = StoryObj<typeof meta>
 
 export const WithResult: Story = {
   args: {
-    result: '田中さん',
+    resultId: 'tanaka-1',
+    resultLabel: '田中さん',
     onClose: fn(),
   },
 }
 
 export const LongName: Story = {
   args: {
-    result: '山田太郎さん',
+    resultId: 'yamada-1',
+    resultLabel: '山田太郎さん',
     onClose: fn(),
   },
 }
 
 export const WithChallengeButton: Story = {
   args: {
-    result: '鈴木さん',
+    resultId: 'suzuki-1',
+    resultLabel: '鈴木さん',
     onClose: fn(),
     onChallenge: fn(),
   },
@@ -38,8 +41,14 @@ export const WithChallengeButton: Story = {
 
 export const WithContextMenu: Story = {
   args: {
-    result: '鈴木さん',
-    candidates: ['田中さん', '鈴木さん', '佐藤さん', '山田さん'],
+    resultId: 'suzuki-1',
+    resultLabel: '鈴木さん',
+    candidates: [
+      { id: 'tanaka-1', label: '田中さん' },
+      { id: 'suzuki-1', label: '鈴木さん' },
+      { id: 'sato-1', label: '佐藤さん' },
+      { id: 'yamada-1', label: '山田さん' },
+    ],
     onClose: fn(),
     onChallenge: fn(),
     onShift: fn(),
@@ -48,8 +57,14 @@ export const WithContextMenu: Story = {
 
 export const WithContextMenuAtEnd: Story = {
   args: {
-    result: '山田さん',
-    candidates: ['田中さん', '鈴木さん', '佐藤さん', '山田さん'],
+    resultId: 'yamada-1',
+    resultLabel: '山田さん',
+    candidates: [
+      { id: 'tanaka-1', label: '田中さん' },
+      { id: 'suzuki-1', label: '鈴木さん' },
+      { id: 'sato-1', label: '佐藤さん' },
+      { id: 'yamada-1', label: '山田さん' },
+    ],
     onClose: fn(),
     onShift: fn(),
   },
@@ -57,12 +72,14 @@ export const WithContextMenuAtEnd: Story = {
 
 export const WithoutCloseButton: Story = {
   args: {
-    result: '佐藤さん',
+    resultId: 'sato-1',
+    resultLabel: '佐藤さん',
   },
 }
 
 export const NoResult: Story = {
   args: {
-    result: null,
+    resultId: null,
+    resultLabel: null,
   },
 }

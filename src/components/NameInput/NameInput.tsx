@@ -1,4 +1,4 @@
-import { ChangeEvent } from 'react'
+import { ChangeEvent, useId } from 'react'
 import { cn } from '@/lib/utils'
 import { ActionButton } from '../ActionButton'
 
@@ -17,6 +17,8 @@ export function NameInput({
   disabled = false,
   count,
 }: NameInputProps) {
+  const textareaId = useId()
+
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     onChange(e.target.value)
   }
@@ -24,9 +26,12 @@ export function NameInput({
   return (
     <div className="w-full">
       <div className="mb-2.5 flex items-center justify-between">
-        <label className="text-base text-gray-400">参加者（改行区切り）</label>
+        <label htmlFor={textareaId} className="text-base text-gray-400">
+          参加者（改行区切り）
+        </label>
         {onShuffle && (
           <ActionButton
+            type="button"
             variant="accent"
             size="sm"
             onClick={onShuffle}
@@ -37,6 +42,7 @@ export function NameInput({
         )}
       </div>
       <textarea
+        id={textareaId}
         className={cn(
           'w-full h-[480px] p-4 text-base leading-relaxed',
           'border-2 border-gray-700 rounded-xl',

@@ -4,7 +4,6 @@ import { useNameList } from './useNameList'
 
 describe('useNameList', () => {
   beforeEach(() => {
-    // Reset URL
     window.history.replaceState({}, '', '/')
   })
 
@@ -50,7 +49,7 @@ describe('useNameList', () => {
       result.current.setRawNames('新しい名前\nもう一人')
     })
 
-    expect(result.current.nameList).toEqual(['新しい名前', 'もう一人'])
+    expect(result.current.rawNames).toBe('新しい名前\nもう一人')
   })
 
   it('should filter empty lines from nameList', () => {
@@ -107,7 +106,6 @@ describe('useNameList', () => {
       result.current.handleNamesChange('田中\n佐藤')
     })
 
-    // Only completed lines (not the last one) should have さん
     expect(result.current.rawNames).toBe('田中さん\n佐藤')
   })
 
@@ -141,5 +139,27 @@ describe('useNameList', () => {
     const { result } = renderHook(() => useNameList())
 
     expect(result.current.withHonorific).toBe(false)
+  })
+
+  it('should treat duplicate names as separate participants', () => {
+    const { result } = renderHook(() =>
+      useNameList({ initialNames: '田中\n田中\n佐藤', withHonorific: false })
+    )
+
+    const firstTanakaId = result.current.participants[0]?.id
+    const secondTanakaId = result.current.participants[1]?.id
+
+    act(() => {
+      result.current.doubleWeight(firstTanakaId)
+    })
+
+    expect(result.current.weights).toEqual([2, 1, 1])
+
+    act(() => {
+      result.current.removeName(secondTanakaId)
+    })
+
+    expect(result.current.nameList).toEqual(['田中', '佐藤'])
+    expect(result.current.weights).toEqual([2, 1])
   })
 })

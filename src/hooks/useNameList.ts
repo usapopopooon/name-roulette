@@ -1,5 +1,17 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 
+interface NameEntry {
+  id: string
+  name: string
+}
+
+export interface NameParticipant {
+  id: string
+  name: string
+  displayName: string
+  weight: number
+}
+
 export interface UseNameListOptions {
   initialNames?: string
   withHonorific?: boolean
@@ -9,17 +21,48 @@ export interface UseNameListReturn {
   rawNames: string
   nameList: string[]
   displayNameList: string[]
+  participants: NameParticipant[]
   weights: number[]
   withHonorific: boolean
   setRawNames: (names: string) => void
   setWithHonorific: (value: boolean) => void
   handleNamesChange: (value: string) => void
-  halveWeight: (name: string) => number[]
-  doubleWeight: (name: string) => void
-  excludeName: (name: string) => number[]
-  restoreName: (name: string) => void
-  removeName: (name: string) => void
+  halveWeight: (id: string) => number[]
+  doubleWeight: (id: string) => void
+  excludeName: (id: string) => number[]
+  restoreName: (id: string) => void
+  removeName: (id: string) => void
   resetWeights: () => void
+}
+
+const normalizeName = (value: string): string => value.trim().replace(/さん$/, '')
+
+const parseNames = (value: string): string[] => {
+  return value
+    .split('\n')
+    .map(normalizeName)
+    .filter((name) => name)
+}
+
+const applyHonorificToCompletedLines = (value: string): string => {
+  const lines = value.split('\n')
+  return lines
+    .map((line, index) => {
+      if (index < lines.length - 1 && line.trim() && !line.endsWith('さん')) {
+        return line + 'さん'
+      }
+      return line
+    })
+    .join('\n')
+}
+
+const serializeEntries = (
+  entries: NameEntry[],
+  withHonorific: boolean
+): string => {
+  return entries
+    .map((entry) => (withHonorific ? `${entry.name}さん` : entry.name))
+    .join('\n')
 }
 
 const getInitialHonorificFromURL = (): boolean => {
@@ -58,43 +101,80 @@ const getInitialNamesFromURL = (withHonorific: boolean): string => {
   return names
 }
 
+const createEntries = (names: string[]): NameEntry[] => {
+  return names.map((name, index) => ({ id: `name-${index}`, name }))
+}
+
+const reconcileEntries = (
+  previousEntries: NameEntry[],
+  nextNames: string[],
+  createId: () => string
+): NameEntry[] => {
+  const reusableEntries = new Map<string, NameEntry[]>()
+
+  previousEntries.forEach((entry) => {
+    const queue = reusableEntries.get(entry.name) ?? []
+    queue.push(entry)
+    reusableEntries.set(entry.name, queue)
+  })
+
+  return nextNames.map((name) => {
+    const queue = reusableEntries.get(name)
+    const entry = queue?.shift()
+    return entry ?? { id: createId(), name }
+  })
+}
+
 export function useNameList(
   options: UseNameListOptions = {}
 ): UseNameListReturn {
-  const [withHonorific, setWithHonorific] = useState(() => {
-    if (options.withHonorific !== undefined) return options.withHonorific
-    return getInitialHonorificFromURL()
-  })
+  const initialWithHonorific =
+    options.withHonorific ?? getInitialHonorificFromURL()
+  const initialRawNames =
+    options.initialNames ?? getInitialNamesFromURL(initialWithHonorific)
+  const initialEntries = createEntries(parseNames(initialRawNames))
 
-  const [rawNames, setRawNames] = useState(() => {
-    if (options.initialNames !== undefined) return options.initialNames
-    return getInitialNamesFromURL(withHonorific)
-  })
+  const [withHonorific, setWithHonorific] = useState(initialWithHonorific)
+  const [rawNames, setRawNames] = useState(initialRawNames)
+  const [entries, setEntries] = useState<NameEntry[]>(initialEntries)
 
-  // 名前ごとの重み（キーは「さん」なしの名前）
+  // 参加者ごとの重み（キーは内部ID）
   const [weightMap, setWeightMap] = useState<Record<string, number>>({})
+  const nextIdRef = useRef(initialEntries.length)
 
   const nameList = useMemo(() => {
-    return rawNames
-      .split('\n')
-      .map((n) => n.trim().replace(/さん$/, ''))
-      .filter((n) => n)
-  }, [rawNames])
+    return entries.map((entry) => entry.name)
+  }, [entries])
 
   const displayNameList = useMemo(() => {
-    return nameList.map((n) => (withHonorific ? `${n}さん` : n))
-  }, [nameList, withHonorific])
+    return entries.map((entry) =>
+      withHonorific ? `${entry.name}さん` : entry.name
+    )
+  }, [entries, withHonorific])
 
-  // nameListに対応した重みの配列
+  const participants = useMemo(() => {
+    return entries.map((entry) => ({
+      id: entry.id,
+      name: entry.name,
+      displayName: withHonorific ? `${entry.name}さん` : entry.name,
+      weight: weightMap[entry.id] ?? 1,
+    }))
+  }, [entries, withHonorific, weightMap])
+
   const weights = useMemo(() => {
-    return nameList.map((name) => weightMap[name] ?? 1)
-  }, [nameList, weightMap])
+    return participants.map((participant) => participant.weight)
+  }, [participants])
 
-  // 最新の値を参照するためのref
   const weightMapRef = useRef(weightMap)
-  const nameListRef = useRef(nameList)
+  const entriesRef = useRef(entries)
   weightMapRef.current = weightMap
-  nameListRef.current = nameList
+  entriesRef.current = entries
+
+  const createId = () => {
+    const id = `name-${nextIdRef.current}`
+    nextIdRef.current += 1
+    return id
+  }
 
   useEffect(() => {
     if (!withHonorific) {
@@ -107,104 +187,76 @@ export function useNameList(
     }
   }, [withHonorific])
 
+  const updateNames = (nextRawNames: string) => {
+    setRawNames(nextRawNames)
+    const nextNames = parseNames(nextRawNames)
+    setEntries((prevEntries) => reconcileEntries(prevEntries, nextNames, createId))
+  }
+
   const handleNamesChange = (newValue: string) => {
-    if (withHonorific) {
-      const lines = newValue.split('\n')
-      const processedLines = lines.map((line, index) => {
-        if (index < lines.length - 1 && line.trim() && !line.endsWith('さん')) {
-          return line + 'さん'
-        }
-        return line
-      })
-      newValue = processedLines.join('\n')
-    }
-    setRawNames(newValue)
+    const nextRawNames = withHonorific
+      ? applyHonorificToCompletedLines(newValue)
+      : newValue
+
+    updateNames(nextRawNames)
   }
 
-  // 特定の名前の重みを半分にして、更新後のweightsを返す
-  const halveWeight = (name: string): number[] => {
-    // 「さん」付きで渡された場合は除去
-    const baseName = name.replace(/さん$/, '')
-    // refから最新の値を取得
+  const getUpdatedWeights = (
+    id: string,
+    update: (currentWeight: number) => number
+  ): number[] => {
     const currentWeightMap = weightMapRef.current
-    const currentNameList = nameListRef.current
-    const newWeight = (currentWeightMap[baseName] ?? 1) / 2
-    const newWeightMap = {
+    const nextWeightMap = {
       ...currentWeightMap,
-      [baseName]: newWeight,
+      [id]: update(currentWeightMap[id] ?? 1),
     }
-    setWeightMap(newWeightMap)
-    // 更新後のweightsを返す
-    return currentNameList.map((n) => newWeightMap[n] ?? 1)
+
+    setWeightMap(nextWeightMap)
+    return entriesRef.current.map((entry) => nextWeightMap[entry.id] ?? 1)
   }
 
-  // 特定の名前の重みを倍にする
-  const doubleWeight = (name: string): void => {
-    // 「さん」付きで渡された場合は除去
-    const baseName = name.replace(/さん$/, '')
-    const currentWeightMap = weightMapRef.current
-    const newWeight = (currentWeightMap[baseName] ?? 1) * 2
+  const halveWeight = (id: string): number[] => {
+    return getUpdatedWeights(id, (currentWeight) => currentWeight / 2)
+  }
+
+  const doubleWeight = (id: string): void => {
     setWeightMap((prev) => ({
       ...prev,
-      [baseName]: newWeight,
+      [id]: (prev[id] ?? 1) * 2,
     }))
   }
 
-  // 特定の名前を除外（重みを0にする）して、更新後のweightsを返す
-  const excludeName = (name: string): number[] => {
-    // 「さん」付きで渡された場合は除去
-    const baseName = name.replace(/さん$/, '')
-    // refから最新の値を取得
-    const currentWeightMap = weightMapRef.current
-    const currentNameList = nameListRef.current
-    const newWeightMap = {
-      ...currentWeightMap,
-      [baseName]: 0,
-    }
-    setWeightMap(newWeightMap)
-    // 更新後のweightsを返す
-    return currentNameList.map((n) => newWeightMap[n] ?? 1)
+  const excludeName = (id: string): number[] => {
+    return getUpdatedWeights(id, () => 0)
   }
 
-  // 除外された名前を復活（重みを1に戻す）
-  const restoreName = (name: string): void => {
-    // 「さん」付きで渡された場合は除去
-    const baseName = name.replace(/さん$/, '')
+  const restoreName = (id: string): void => {
     setWeightMap((prev) => {
-      // 重みが0（除外されている）場合のみ復活
-      if (prev[baseName] === 0) {
-        const newMap = { ...prev }
-        delete newMap[baseName] // デフォルトの1に戻す
-        return newMap
+      if (!(id in prev)) {
+        return prev
       }
-      return prev
+
+      const nextMap = { ...prev }
+      delete nextMap[id]
+      return nextMap
     })
   }
 
-  // 名前をリストから完全に削除
-  const removeName = (name: string): void => {
-    // 「さん」付きで渡された場合は除去
-    const baseName = name.replace(/さん$/, '')
-    setRawNames((prev) => {
-      const lines = prev.split('\n')
-      const filtered = lines.filter((line) => {
-        const lineName = line.trim().replace(/さん$/, '')
-        return lineName !== baseName
-      })
-      return filtered.join('\n')
-    })
-    // weightMapからも削除
+  const removeName = (id: string): void => {
+    const nextEntries = entriesRef.current.filter((entry) => entry.id !== id)
+    setEntries(nextEntries)
+    setRawNames(serializeEntries(nextEntries, withHonorific))
     setWeightMap((prev) => {
-      if (baseName in prev) {
-        const newMap = { ...prev }
-        delete newMap[baseName]
-        return newMap
+      if (!(id in prev)) {
+        return prev
       }
-      return prev
+
+      const nextMap = { ...prev }
+      delete nextMap[id]
+      return nextMap
     })
   }
 
-  // 全ての重みをリセット
   const resetWeights = () => {
     setWeightMap({})
   }
@@ -213,6 +265,7 @@ export function useNameList(
     rawNames,
     nameList,
     displayNameList,
+    participants,
     weights,
     withHonorific,
     setRawNames,

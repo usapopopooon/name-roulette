@@ -2,28 +2,40 @@ import { describe, test, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { ResultDisplay } from './ResultDisplay'
 
+const candidates = [
+  { id: 'tanaka-1', label: '田中さん' },
+  { id: 'suzuki-1', label: '鈴木さん' },
+  { id: 'sato-1', label: '佐藤さん' },
+]
+
 describe('ResultDisplay', () => {
   test('resultがnullの場合は何も表示しない', () => {
-    const { container } = render(<ResultDisplay result={null} />)
+    const { container } = render(
+      <ResultDisplay resultId={null} resultLabel={null} />
+    )
 
     expect(container.firstChild).toBeNull()
   })
 
   test('当選者ラベルと名前を表示する', () => {
-    render(<ResultDisplay result="田中さん" />)
+    render(<ResultDisplay resultId="tanaka-1" resultLabel="田中さん" />)
 
     expect(screen.getByText('🎉 当選者 🎉')).toBeInTheDocument()
     expect(screen.getByText('田中さん')).toBeInTheDocument()
   })
 
   test('結果文字列をそのまま表示する', () => {
-    render(<ResultDisplay result="テスト太郎さん" />)
+    render(
+      <ResultDisplay resultId="test-1" resultLabel="テスト太郎さん" />
+    )
 
     expect(screen.getByText('テスト太郎さん')).toBeInTheDocument()
   })
 
   test('fixed配置のオーバーレイとしてレンダリングされる', () => {
-    const { container } = render(<ResultDisplay result="田中さん" />)
+    const { container } = render(
+      <ResultDisplay resultId="tanaka-1" resultLabel="田中さん" />
+    )
 
     const overlay = container.firstChild as HTMLElement
     expect(overlay.className).toContain('fixed')
@@ -31,20 +43,24 @@ describe('ResultDisplay', () => {
   })
 
   test('onCloseが渡された場合は閉じるボタンを表示する', () => {
-    render(<ResultDisplay result="田中さん" onClose={() => {}} />)
+    render(
+      <ResultDisplay resultId="tanaka-1" resultLabel="田中さん" onClose={() => {}} />
+    )
 
     expect(screen.getByText('閉じる')).toBeInTheDocument()
   })
 
   test('onCloseが渡されない場合は閉じるボタンを表示しない', () => {
-    render(<ResultDisplay result="田中さん" />)
+    render(<ResultDisplay resultId="tanaka-1" resultLabel="田中さん" />)
 
     expect(screen.queryByText('閉じる')).not.toBeInTheDocument()
   })
 
   test('閉じるボタンをクリックするとonCloseが呼ばれる', () => {
     const onClose = vi.fn()
-    render(<ResultDisplay result="田中さん" onClose={onClose} />)
+    render(
+      <ResultDisplay resultId="tanaka-1" resultLabel="田中さん" onClose={onClose} />
+    )
 
     fireEvent.click(screen.getByText('閉じる'))
 
@@ -53,7 +69,9 @@ describe('ResultDisplay', () => {
 
   test('オーバーレイ背景をクリックするとonCloseが呼ばれる', () => {
     const onClose = vi.fn()
-    render(<ResultDisplay result="田中さん" onClose={onClose} />)
+    render(
+      <ResultDisplay resultId="tanaka-1" resultLabel="田中さん" onClose={onClose} />
+    )
 
     const overlay = document.querySelector('.z-50') as HTMLElement
     fireEvent.click(overlay)
@@ -63,11 +81,19 @@ describe('ResultDisplay', () => {
 
   test('モーダル内容をクリックしてもonCloseは呼ばれない', () => {
     const onClose = vi.fn()
-    render(<ResultDisplay result="田中さん" onClose={onClose} />)
+    render(
+      <ResultDisplay resultId="tanaka-1" resultLabel="田中さん" onClose={onClose} />
+    )
 
     fireEvent.click(screen.getByText('田中さん'))
 
     expect(onClose).not.toHaveBeenCalled()
+  })
+
+  test('dialogロールを持つ', () => {
+    render(<ResultDisplay resultId="tanaka-1" resultLabel="田中さん" />)
+
+    expect(screen.getByRole('dialog', { name: '抽選結果' })).toBeInTheDocument()
   })
 
   describe('シフト用コンテキストメニュー', () => {
@@ -75,8 +101,9 @@ describe('ResultDisplay', () => {
       const onShift = vi.fn()
       render(
         <ResultDisplay
-          result="田中さん"
-          candidates={['田中さん', '鈴木さん', '佐藤さん']}
+          resultId="tanaka-1"
+          resultLabel="田中さん"
+          candidates={candidates}
           onShift={onShift}
         />
       )
@@ -91,8 +118,9 @@ describe('ResultDisplay', () => {
       const onShift = vi.fn()
       render(
         <ResultDisplay
-          result="佐藤さん"
-          candidates={['田中さん', '鈴木さん', '佐藤さん']}
+          resultId="sato-1"
+          resultLabel="佐藤さん"
+          candidates={candidates}
           onShift={onShift}
         />
       )
@@ -102,12 +130,33 @@ describe('ResultDisplay', () => {
       expect(screen.getByText(/田中さん/)).toBeInTheDocument()
     })
 
+    test('同名の候補でも現在のidを基準に次候補を選べる', () => {
+      const onShift = vi.fn()
+      render(
+        <ResultDisplay
+          resultId="tanaka-2"
+          resultLabel="田中さん"
+          candidates={[
+            { id: 'tanaka-1', label: '田中さん' },
+            { id: 'tanaka-2', label: '田中さん' },
+            { id: 'sato-1', label: '佐藤さん' },
+          ]}
+          onShift={onShift}
+        />
+      )
+
+      fireEvent.contextMenu(screen.getByText('田中さん'))
+
+      expect(screen.getByText(/佐藤さん/)).toBeInTheDocument()
+    })
+
     test('メニュー項目をクリックするとonShiftが方向1で呼ばれる', () => {
       const onShift = vi.fn()
       render(
         <ResultDisplay
-          result="田中さん"
-          candidates={['田中さん', '鈴木さん', '佐藤さん']}
+          resultId="tanaka-1"
+          resultLabel="田中さん"
+          candidates={candidates}
           onShift={onShift}
         />
       )
@@ -121,8 +170,9 @@ describe('ResultDisplay', () => {
     test('onShiftが渡されない場合はコンテキストメニューを表示しない', () => {
       render(
         <ResultDisplay
-          result="田中さん"
-          candidates={['田中さん', '鈴木さん', '佐藤さん']}
+          resultId="tanaka-1"
+          resultLabel="田中さん"
+          candidates={candidates}
         />
       )
 
@@ -135,8 +185,9 @@ describe('ResultDisplay', () => {
       const onShift = vi.fn()
       render(
         <ResultDisplay
-          result="田中さん"
-          candidates={['田中さん']}
+          resultId="tanaka-1"
+          resultLabel="田中さん"
+          candidates={[{ id: 'tanaka-1', label: '田中さん' }]}
           onShift={onShift}
         />
       )
@@ -150,8 +201,9 @@ describe('ResultDisplay', () => {
       const onShift = vi.fn()
       const { rerender } = render(
         <ResultDisplay
-          result="田中さん"
-          candidates={['田中さん', '鈴木さん', '佐藤さん']}
+          resultId="tanaka-1"
+          resultLabel="田中さん"
+          candidates={candidates}
           onShift={onShift}
         />
       )
@@ -161,15 +213,14 @@ describe('ResultDisplay', () => {
 
       rerender(
         <ResultDisplay
-          result="鈴木さん"
-          candidates={['田中さん', '鈴木さん', '佐藤さん']}
+          resultId="suzuki-1"
+          resultLabel="鈴木さん"
+          candidates={candidates}
           onShift={onShift}
         />
       )
 
-      expect(
-        screen.queryByText(/次の人にする → 鈴木さん/)
-      ).not.toBeInTheDocument()
+      expect(screen.queryByText(/次の人にする/)).not.toBeInTheDocument()
     })
   })
 })
