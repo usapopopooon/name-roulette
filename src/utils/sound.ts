@@ -67,6 +67,93 @@ export const playClickSound = (): void => {
   }
 }
 
+export const playCatInterruptionSound = (): void => {
+  try {
+    const ctx = getAudioContext()
+    const masterGain = ctx.createGain()
+    const startTime = ctx.currentTime
+    masterGain.connect(ctx.destination)
+    masterGain.gain.setValueAtTime(0.24, startTime)
+
+    const scratches = [
+      { time: 0, duration: 0.03, high: 1850, low: 980 },
+      { time: 0.045, duration: 0.028, high: 1780, low: 920 },
+      { time: 0.095, duration: 0.032, high: 1920, low: 1020 },
+      { time: 0.155, duration: 0.036, high: 1680, low: 860 },
+      { time: 0.215, duration: 0.03, high: 1760, low: 940 },
+      { time: 0.265, duration: 0.04, high: 1520, low: 760 },
+    ]
+
+    scratches.forEach(({ time, duration, high, low }) => {
+      const scrape = ctx.createOscillator()
+      const thump = ctx.createOscillator()
+      const scrapeGain = ctx.createGain()
+      const thumpGain = ctx.createGain()
+      const hitStart = startTime + time
+      const hitEnd = hitStart + duration
+
+      scrape.type = 'square'
+      scrape.frequency.setValueAtTime(high, hitStart)
+      scrape.frequency.exponentialRampToValueAtTime(low, hitEnd)
+      thump.type = 'triangle'
+      thump.frequency.setValueAtTime(220, hitStart)
+      thump.frequency.exponentialRampToValueAtTime(150, hitEnd)
+
+      scrape.connect(scrapeGain)
+      thump.connect(thumpGain)
+      scrapeGain.connect(masterGain)
+      thumpGain.connect(masterGain)
+
+      createGainEnvelope(scrapeGain, hitStart, 0.018, duration)
+      createGainEnvelope(thumpGain, hitStart, 0.012, duration)
+
+      scrape.start(hitStart)
+      thump.start(hitStart)
+      scrape.stop(hitEnd)
+      thump.stop(hitEnd)
+    })
+  } catch {
+    // Audio not supported
+  }
+}
+
+export const playDuckInterruptionSound = (): void => {
+  try {
+    const ctx = getAudioContext()
+    const startTime = ctx.currentTime
+    const masterGain = ctx.createGain()
+    masterGain.connect(ctx.destination)
+    masterGain.gain.setValueAtTime(0.22, startTime)
+
+    const steps = [
+      { time: 0, duration: 0.028, high: 960, low: 560 },
+      { time: 0.07, duration: 0.025, high: 900, low: 520 },
+      { time: 0.15, duration: 0.03, high: 980, low: 590 },
+      { time: 0.22, duration: 0.026, high: 920, low: 540 },
+      { time: 0.3, duration: 0.032, high: 1000, low: 610 },
+    ]
+
+    steps.forEach(({ time, duration, high, low }) => {
+      const tap = ctx.createOscillator()
+      const tapGain = ctx.createGain()
+      const stepStart = startTime + time
+      const stepEnd = stepStart + duration
+
+      tap.type = 'triangle'
+      tap.frequency.setValueAtTime(high, stepStart)
+      tap.frequency.exponentialRampToValueAtTime(low, stepEnd)
+      tap.connect(tapGain)
+      tapGain.connect(masterGain)
+      createGainEnvelope(tapGain, stepStart, 0.017, duration)
+
+      tap.start(stepStart)
+      tap.stop(stepEnd)
+    })
+  } catch {
+    // Audio not supported
+  }
+}
+
 // 当選時のファンファーレ
 export const playFanfare = (): void => {
   try {

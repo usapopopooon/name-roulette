@@ -140,4 +140,38 @@ describe('sound utilities', () => {
       expect(() => playFanfare()).not.toThrow()
     })
   })
+
+  describe('playCatInterruptionSound', () => {
+    it('should create oscillators and gain nodes for the cat sound', async () => {
+      const { playCatInterruptionSound } = await import('./sound')
+      playCatInterruptionSound()
+
+      expect(mockAudioContext.createOscillator).toHaveBeenCalled()
+      expect(mockAudioContext.createGain).toHaveBeenCalled()
+    })
+
+    it('should not throw when AudioContext is not supported', async () => {
+      vi.stubGlobal('AudioContext', undefined)
+      const { playCatInterruptionSound } = await import('./sound')
+
+      expect(() => playCatInterruptionSound()).not.toThrow()
+    })
+  })
+
+  describe('playDuckInterruptionSound', () => {
+    it('should create oscillator and gain node for the duck sound', async () => {
+      const { playDuckInterruptionSound } = await import('./sound')
+      playDuckInterruptionSound()
+
+      expect(mockAudioContext.createOscillator).toHaveBeenCalled()
+      expect(mockAudioContext.createGain).toHaveBeenCalled()
+    })
+
+    it('should not throw when AudioContext is not supported', async () => {
+      vi.stubGlobal('AudioContext', undefined)
+      const { playDuckInterruptionSound } = await import('./sound')
+
+      expect(() => playDuckInterruptionSound()).not.toThrow()
+    })
+  })
 })

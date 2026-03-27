@@ -2,9 +2,18 @@ import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { CatInterruptionOverlay } from './CatInterruptionOverlay'
 
+const soundMocks = vi.hoisted(() => ({
+  playCatInterruptionSound: vi.fn(),
+  playDuckInterruptionSound: vi.fn(),
+}))
+
+vi.mock('../../utils/sound', () => soundMocks)
+
 describe('CatInterruptionOverlay', () => {
   beforeEach(() => {
     vi.useFakeTimers()
+    soundMocks.playCatInterruptionSound.mockClear()
+    soundMocks.playDuckInterruptionSound.mockClear()
   })
 
   afterEach(() => {
@@ -41,6 +50,13 @@ describe('CatInterruptionOverlay', () => {
     expect(screen.getByText('🐱')).toBeInTheDocument()
   })
 
+  test('猫表示時に猫の効果音を再生する', () => {
+    render(<CatInterruptionOverlay show={true} type="cat" />)
+
+    expect(soundMocks.playCatInterruptionSound).toHaveBeenCalledTimes(1)
+    expect(soundMocks.playDuckInterruptionSound).not.toHaveBeenCalled()
+  })
+
   test('猫の場合は左右から前足アイコンを複数表示する', () => {
     render(<CatInterruptionOverlay show={true} type="cat" />)
 
@@ -52,6 +68,13 @@ describe('CatInterruptionOverlay', () => {
 
     const ducks = screen.getAllByText('🦆')
     expect(ducks).toHaveLength(4) // 親1匹 + 子3匹
+  })
+
+  test('アヒル表示時にアヒルの効果音を再生する', () => {
+    render(<CatInterruptionOverlay show={true} type="duck" />)
+
+    expect(soundMocks.playDuckInterruptionSound).toHaveBeenCalledTimes(1)
+    expect(soundMocks.playCatInterruptionSound).not.toHaveBeenCalled()
   })
 
   test('2.5秒後にonCompleteが呼ばれる', () => {

@@ -1,4 +1,8 @@
 import { useEffect } from 'react'
+import {
+  playCatInterruptionSound,
+  playDuckInterruptionSound,
+} from '../../utils/sound'
 
 export type InterruptionType = 'cat' | 'duck'
 
@@ -43,6 +47,16 @@ export function CatInterruptionOverlay({
       return () => clearTimeout(timer)
     }
   }, [show, onComplete])
+
+  useEffect(() => {
+    if (!show) return
+
+    if (type === 'cat') {
+      playCatInterruptionSound()
+    } else {
+      playDuckInterruptionSound()
+    }
+  }, [show, type])
 
   if (!show) return null
 
