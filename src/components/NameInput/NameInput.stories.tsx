@@ -35,8 +35,18 @@ export const Default: Story = {
 
 export const WithNames: Story = {
   args: {
-    value: '田中さん\n佐藤さん\n鈴木さん',
+    value: '田中\n佐藤\n鈴木',
     count: 3,
+    onChange: () => {},
+    onShuffle: () => {},
+  },
+}
+
+export const WithHonorific: Story = {
+  args: {
+    value: '田中\n佐藤\n鈴木',
+    count: 3,
+    withHonorific: true,
     onChange: () => {},
     onShuffle: () => {},
   },
@@ -44,7 +54,7 @@ export const WithNames: Story = {
 
 export const Disabled: Story = {
   args: {
-    value: '田中さん\n佐藤さん',
+    value: '田中\n佐藤',
     count: 2,
     disabled: true,
     onChange: () => {},
@@ -54,7 +64,7 @@ export const Disabled: Story = {
 
 export const WithoutShuffle: Story = {
   args: {
-    value: '田中さん\n佐藤さん',
+    value: '田中\n佐藤',
     count: 2,
     onChange: () => {},
   },
@@ -62,8 +72,9 @@ export const WithoutShuffle: Story = {
 
 export const Interactive: Story = {
   args: {
-    value: '田中さん\n佐藤さん\n鈴木さん\n高橋さん\n渡辺さん',
+    value: '田中\n佐藤\n鈴木\n高橋\n渡辺',
     count: 5,
+    withHonorific: true,
     onChange: () => {},
     onShuffle: () => {},
   },

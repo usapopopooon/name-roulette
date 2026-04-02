@@ -6,6 +6,7 @@ import { ActionButton } from '../ActionButton'
 import { Checkbox } from '../Checkbox'
 import { ShareButton } from '../ShareButton'
 import { ConfirmDialog } from '../ConfirmDialog'
+import { ManualDialog } from '../ManualDialog'
 import { ContextMenu } from '../ContextMenu'
 import {
   CatInterruptionOverlay,
@@ -61,6 +62,7 @@ export function NameRoulette() {
     useState<InterruptionType | null>(null)
   const [interruptionChecked, setInterruptionChecked] = useState(false)
   const [interruptionOccurred, setInterruptionOccurred] = useState(false)
+  const [showManual, setShowManual] = useState(false)
 
   const rouletteItems = useMemo<RouletteWheelItem[]>(
     () =>
@@ -265,9 +267,22 @@ export function NameRoulette() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-tertiary p-5 font-['Segoe_UI','Hiragino_Sans',sans-serif] text-white">
-      <h1 className="text-center text-[clamp(1.5rem,5vw,2.5rem)] mb-5 [text-shadow:0_0_20px_rgba(255,200,100,0.5)]">
-        🎯 お名前ルーレット
-      </h1>
+      <div className="relative mb-5">
+        <h1 className="text-center text-[clamp(1.5rem,5vw,2.5rem)] [text-shadow:0_0_20px_rgba(255,200,100,0.5)]">
+          🎯 お名前ルーレット
+        </h1>
+        <button
+          type="button"
+          onClick={() => setShowManual(true)}
+          className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-3 py-1 rounded-full border-2 border-gray-500 text-gray-400 hover:border-purple-start hover:text-purple-start text-sm transition-colors cursor-pointer"
+          aria-label="使い方を表示"
+        >
+          <span className="inline-flex items-center justify-center w-4 h-4 rounded-full border border-current text-[10px] font-bold leading-none">
+            ?
+          </span>
+          使い方
+        </button>
+      </div>
 
       <div className="flex justify-center">
         <div className="flex gap-4 items-start max-md:flex-col max-md:items-center">
@@ -380,6 +395,8 @@ export function NameRoulette() {
           onClose={handleCloseContextMenu}
         />
       )}
+
+      {showManual && <ManualDialog onClose={() => setShowManual(false)} />}
     </div>
   )
 }

@@ -5,6 +5,17 @@
 フォーマットは [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に基づいており、
 [Semantic Versioning](https://semver.org/lang/ja/) に準拠しています。
 
+## [0.0.9] - 2026-04-03
+
+### 追加
+
+- 「使い方」マニュアルダイアログを追加（ヘッダーの「使い方」ボタンから表示）
+- 不足していたStoryを追加（ConfirmDialog, ContextMenu, ManualDialog, ActionButton accent）
+
+### 改善
+
+- 右クリックメニューの横幅をコンテンツに合わせてコンパクトに変更
+
 ## [0.0.8] - 2026-04-03
 
 ### 追加

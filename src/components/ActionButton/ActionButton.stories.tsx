@@ -15,7 +15,7 @@ const meta = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['primary', 'secondary'],
+      options: ['primary', 'secondary', 'accent'],
     },
   },
 } satisfies Meta<typeof ActionButton>
@@ -65,6 +65,23 @@ export const SmallSecondaryDisabled: Story = {
   args: {
     children: '🔀 シャッフル',
     variant: 'secondary',
+    size: 'sm',
+    disabled: true,
+  },
+}
+
+export const Accent: Story = {
+  args: {
+    children: '🔀 シャッフル',
+    variant: 'accent',
+    size: 'sm',
+  },
+}
+
+export const AccentDisabled: Story = {
+  args: {
+    children: '🔀 シャッフル',
+    variant: 'accent',
     size: 'sm',
     disabled: true,
   },

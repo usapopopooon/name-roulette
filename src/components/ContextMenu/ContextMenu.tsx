@@ -69,7 +69,7 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
     <div
       ref={menuRef}
       role="menu"
-      className="fixed z-[100] min-w-[180px] py-2 bg-dark-secondary/95 backdrop-blur-sm border border-gold/30 rounded-lg shadow-[0_0_20px_rgba(0,0,0,0.5)]"
+      className="fixed z-[100] w-max py-2 bg-dark-secondary/95 backdrop-blur-sm border border-gold/30 rounded-lg shadow-[0_0_20px_rgba(0,0,0,0.5)]"
       style={{ left: adjustedX, top: adjustedY }}
     >
       {items.map((item, index) => (
@@ -84,7 +84,7 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
             item.onClick()
             onClose()
           }}
-          className={`w-full px-4 py-2 text-left text-sm transition-colors cursor-pointer ${
+          className={`block w-full px-3 py-1.5 text-left text-sm whitespace-nowrap transition-colors cursor-pointer ${
             item.danger
               ? 'text-red-400 hover:bg-red-500/20'
               : 'text-white hover:bg-gold/20'
