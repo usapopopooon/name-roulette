@@ -310,6 +310,7 @@ export function NameRoulette() {
               onShuffle={handleShuffle}
               disabled={isSpinning}
               count={nameList.length}
+              withHonorific={withHonorific}
             />
 
             <Checkbox

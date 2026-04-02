@@ -1,4 +1,4 @@
-import { ChangeEvent, useId } from 'react'
+import { ChangeEvent, useId, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { ActionButton } from '../ActionButton'
 
@@ -8,7 +8,10 @@ export interface NameInputProps {
   onShuffle?: () => void
   disabled?: boolean
   count: number
+  withHonorific?: boolean
 }
+
+const textareaFont = "'Segoe UI', 'Hiragino Sans', sans-serif" as const
 
 export function NameInput({
   value,
@@ -16,12 +19,23 @@ export function NameInput({
   onShuffle,
   disabled = false,
   count,
+  withHonorific = false,
 }: NameInputProps) {
   const textareaId = useId()
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const [scrollTop, setScrollTop] = useState(0)
 
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     onChange(e.target.value)
   }
+
+  const handleScroll = () => {
+    if (textareaRef.current) {
+      setScrollTop(textareaRef.current.scrollTop)
+    }
+  }
+
+  const lines = value.split('\n')
 
   return (
     <div className="w-full">
@@ -41,20 +55,48 @@ export function NameInput({
           </ActionButton>
         )}
       </div>
-      <textarea
-        id={textareaId}
-        className={cn(
-          'w-full h-[480px] p-4 text-base leading-relaxed',
-          'border-2 border-gray-700 rounded-xl',
-          'bg-white/5 text-white resize-none outline-none',
-          'focus:border-purple-start',
-          'disabled:opacity-60 disabled:cursor-not-allowed'
+      <div className="relative">
+        <textarea
+          ref={textareaRef}
+          id={textareaId}
+          className={cn(
+            'w-full h-[480px] p-4 text-base leading-relaxed',
+            'border-2 border-gray-700 rounded-xl',
+            'bg-white/5 text-white resize-none outline-none',
+            'focus:border-purple-start',
+            'disabled:opacity-60 disabled:cursor-not-allowed'
+          )}
+          style={{ fontFamily: textareaFont }}
+          value={value}
+          onChange={handleChange}
+          onScroll={handleScroll}
+          disabled={disabled}
+          placeholder={'名前を入力\n改行で区切る'}
+        />
+        {withHonorific && (
+          <div
+            className="absolute inset-0 overflow-hidden pointer-events-none border-2 border-transparent rounded-xl"
+            aria-hidden="true"
+          >
+            <div
+              className="p-4 text-base leading-relaxed"
+              style={{
+                transform: `translateY(-${scrollTop}px)`,
+                fontFamily: textareaFont,
+              }}
+            >
+              {lines.map((line, i) => (
+                <div key={i} className="whitespace-pre-wrap break-words">
+                  <span className="invisible">{line || '\u00A0'}</span>
+                  {line.trim() && (
+                    <span className="visible text-gray-400"> さん</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         )}
-        value={value}
-        onChange={handleChange}
-        disabled={disabled}
-        placeholder={'名前を入力\n改行で区切る'}
-      />
+      </div>
       <div className="mt-2 flex justify-end">
         <span className="text-gray-500 text-sm">参加者: {count}名</span>
       </div>

@@ -46,37 +46,8 @@ const parseNames = (value: string): string[] => {
     .filter((name) => name)
 }
 
-const applyHonorificToCompletedLines = (value: string): string => {
-  const lines = value.split('\n')
-  return lines
-    .map((line, index) => {
-      if (index < lines.length - 1 && line.trim() && !line.endsWith('さん')) {
-        return line + 'さん'
-      }
-      return line
-    })
-    .join('\n')
-}
-
-const applyHonorificToAllLines = (value: string): string => {
-  return value
-    .split('\n')
-    .map((line) => {
-      if (line.trim() && !line.endsWith('さん')) {
-        return line + 'さん'
-      }
-      return line
-    })
-    .join('\n')
-}
-
-const serializeEntries = (
-  entries: NameEntry[],
-  withHonorific: boolean
-): string => {
-  return entries
-    .map((entry) => (withHonorific ? `${entry.name}さん` : entry.name))
-    .join('\n')
+const serializeEntries = (entries: NameEntry[]): string => {
+  return entries.map((entry) => entry.name).join('\n')
 }
 
 const getInitialHonorificFromURL = (): boolean => {
@@ -86,33 +57,18 @@ const getInitialHonorificFromURL = (): boolean => {
   return sanParam !== '0'
 }
 
-const getInitialNamesFromURL = (withHonorific: boolean): string => {
+const getInitialNamesFromURL = (): string => {
   if (typeof window === 'undefined') return ''
   const params = new URLSearchParams(window.location.search)
   const namesParam = params.get('names')
 
-  let names = ''
-  if (namesParam) {
-    try {
-      names = decodeURIComponent(namesParam)
-    } catch {
-      names = ''
-    }
-  }
+  if (!namesParam) return ''
 
-  if (withHonorific && names) {
-    names = names
-      .split('\n')
-      .map((line) => {
-        if (line.trim() && !line.endsWith('さん')) {
-          return line + 'さん'
-        }
-        return line
-      })
-      .join('\n')
+  try {
+    return decodeURIComponent(namesParam)
+  } catch {
+    return ''
   }
-
-  return names
 }
 
 const createEntries = (names: string[]): NameEntry[] => {
@@ -144,8 +100,7 @@ export function useNameList(
 ): UseNameListReturn {
   const initialWithHonorific =
     options.withHonorific ?? getInitialHonorificFromURL()
-  const initialRawNames =
-    options.initialNames ?? getInitialNamesFromURL(initialWithHonorific)
+  const initialRawNames = options.initialNames ?? getInitialNamesFromURL()
   const initialEntries = createEntries(parseNames(initialRawNames))
 
   const [withHonorific, setWithHonorific] = useState(initialWithHonorific)
@@ -191,17 +146,15 @@ export function useNameList(
   }
 
   useEffect(() => {
-    if (withHonorific) {
-      setRawNamesState((prev) => applyHonorificToAllLines(prev))
-      return
+    // さん切り替え時、rawNamesからさん接尾辞を除去（過去データ互換）
+    if (!withHonorific) {
+      setRawNamesState((prev) =>
+        prev
+          .split('\n')
+          .map((line) => line.replace(/さん$/, ''))
+          .join('\n')
+      )
     }
-
-    setRawNamesState((prev) =>
-      prev
-        .split('\n')
-        .map((line) => line.replace(/さん$/, ''))
-        .join('\n')
-    )
   }, [withHonorific])
 
   const updateNames = (nextRawNames: string) => {
@@ -217,16 +170,12 @@ export function useNameList(
   }
 
   const handleNamesChange = (newValue: string) => {
-    const nextRawNames = withHonorific
-      ? applyHonorificToCompletedLines(newValue)
-      : newValue
-
-    updateNames(nextRawNames)
+    updateNames(newValue)
   }
 
   const compactRawNames = () => {
     // entries は空行・空白行を除いた正規化済みのため、ここから再構築すると入力を詰められる
-    setRawNamesState(serializeEntries(entriesRef.current, withHonorific))
+    setRawNamesState(serializeEntries(entriesRef.current))
   }
 
   const getUpdatedWeights = (
@@ -273,7 +222,7 @@ export function useNameList(
   const removeName = (id: string): void => {
     const nextEntries = entriesRef.current.filter((entry) => entry.id !== id)
     setEntries(nextEntries)
-    setRawNamesState(serializeEntries(nextEntries, withHonorific))
+    setRawNamesState(serializeEntries(nextEntries))
     setWeightMap((prev) => {
       if (!(id in prev)) {
         return prev

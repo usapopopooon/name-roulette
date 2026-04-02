@@ -106,7 +106,7 @@ describe('useNameList', () => {
     expect(result.current.withHonorific).toBe(false)
   })
 
-  it('should add さん suffix immediately when turning honorific on', () => {
+  it('should not modify rawNames when turning honorific on', () => {
     const { result } = renderHook(() =>
       useNameList({ initialNames: '田中\n佐藤', withHonorific: false })
     )
@@ -115,7 +115,8 @@ describe('useNameList', () => {
       result.current.setWithHonorific(true)
     })
 
-    expect(result.current.rawNames).toBe('田中さん\n佐藤さん')
+    expect(result.current.rawNames).toBe('田中\n佐藤')
+    expect(result.current.displayNameList).toEqual(['田中さん', '佐藤さん'])
   })
 
   it('should remove さん suffix when turning off honorific', () => {
@@ -130,7 +131,7 @@ describe('useNameList', () => {
     expect(result.current.rawNames).toBe('田中\n佐藤')
   })
 
-  it('should auto-add さん via handleNamesChange when honorific is on', () => {
+  it('should not modify rawNames via handleNamesChange when honorific is on', () => {
     const { result } = renderHook(() =>
       useNameList({ initialNames: '', withHonorific: true })
     )
@@ -139,7 +140,8 @@ describe('useNameList', () => {
       result.current.handleNamesChange('田中\n佐藤')
     })
 
-    expect(result.current.rawNames).toBe('田中さん\n佐藤')
+    expect(result.current.rawNames).toBe('田中\n佐藤')
+    expect(result.current.displayNameList).toEqual(['田中さん', '佐藤さん'])
   })
 
   it('should not auto-add さん via handleNamesChange when honorific is off', () => {

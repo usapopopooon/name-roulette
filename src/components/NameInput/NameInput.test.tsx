@@ -115,4 +115,57 @@ describe('NameInput', () => {
 
     expect(screen.getByText('🔀 シャッフル')).toBeDisabled()
   })
+
+  it('should show さん overlay when withHonorific is true', () => {
+    render(
+      <NameInput
+        value={'田中\n佐藤'}
+        onChange={() => {}}
+        count={2}
+        withHonorific
+      />
+    )
+
+    const overlay = document.querySelector('[aria-hidden="true"]')
+    expect(overlay).toBeInTheDocument()
+
+    const sanLabels = screen.getAllByText('さん')
+    expect(sanLabels).toHaveLength(2)
+  })
+
+  it('should not show さん overlay when withHonorific is false', () => {
+    render(<NameInput value={'田中\n佐藤'} onChange={() => {}} count={2} />)
+
+    const overlay = document.querySelector('[aria-hidden="true"]')
+    expect(overlay).not.toBeInTheDocument()
+    expect(screen.queryByText('さん')).not.toBeInTheDocument()
+  })
+
+  it('should not show さん for empty lines', () => {
+    render(
+      <NameInput
+        value={'田中\n\n佐藤'}
+        onChange={() => {}}
+        count={2}
+        withHonorific
+      />
+    )
+
+    const sanLabels = screen.getAllByText('さん')
+    expect(sanLabels).toHaveLength(2)
+  })
+
+  it('should not show さん for whitespace-only lines', () => {
+    render(
+      <NameInput
+        value={'田中\n   \n佐藤'}
+        onChange={() => {}}
+        count={2}
+        withHonorific
+      />
+    )
+
+    const sanLabels = screen.getAllByText('さん')
+    expect(sanLabels).toHaveLength(2)
+  })
 })
