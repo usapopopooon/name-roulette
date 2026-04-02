@@ -5,6 +5,12 @@
 フォーマットは [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に基づいており、
 [Semantic Versioning](https://semver.org/lang/ja/) に準拠しています。
 
+## [0.0.10] - 2026-04-03
+
+### 改善
+
+- 参加者入力の空行整理をフォーカスアウト時に実行するように変更
+
 ## [0.0.9] - 2026-04-03
 
 ### 追加

@@ -323,6 +323,7 @@ export function NameRoulette() {
               value={rawNames}
               onChange={handleNamesChange}
               onShuffle={handleShuffle}
+              onBlur={compactRawNames}
               disabled={isSpinning}
               count={nameList.length}
               withHonorific={withHonorific}

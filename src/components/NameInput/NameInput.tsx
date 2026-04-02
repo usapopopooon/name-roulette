@@ -6,6 +6,7 @@ export interface NameInputProps {
   value: string
   onChange: (value: string) => void
   onShuffle?: () => void
+  onBlur?: () => void
   disabled?: boolean
   count: number
   withHonorific?: boolean
@@ -17,6 +18,7 @@ export function NameInput({
   value,
   onChange,
   onShuffle,
+  onBlur,
   disabled = false,
   count,
   withHonorific = false,
@@ -70,6 +72,7 @@ export function NameInput({
           value={value}
           onChange={handleChange}
           onScroll={handleScroll}
+          onBlur={onBlur}
           disabled={disabled}
           placeholder={'名前を入力\n改行で区切る'}
         />
