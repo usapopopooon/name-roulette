@@ -368,6 +368,10 @@ export function NameRoulette() {
               onClick: () => doubleWeight(contextMenu.id),
             },
             {
+              label: `「${contextMenu.label}」の確率を半分にする`,
+              onClick: () => halveWeight(contextMenu.id),
+            },
+            {
               label: `「${contextMenu.label}」を削除`,
               onClick: () => removeName(contextMenu.id),
               danger: true,

@@ -5,6 +5,12 @@
 フォーマットは [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に基づいており、
 [Semantic Versioning](https://semver.org/lang/ja/) に準拠しています。
 
+## [0.0.8] - 2026-04-03
+
+### 追加
+
+- 右クリックメニューに「確率を半分にする」を追加
+
 ## [0.0.7] - 2026-04-02
 
 ### 変更
