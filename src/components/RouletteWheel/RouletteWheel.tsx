@@ -162,7 +162,7 @@ export function RouletteWheel({
   if (items.length < 2) {
     return (
       <div
-        className="flex items-center justify-center text-center text-gray-500 text-lg leading-loose"
+        className="flex items-center justify-center text-center text-white/60 text-lg leading-loose"
         style={{ width: size, height: size }}
       >
         2名以上の参加者を

@@ -5,6 +5,13 @@
 フォーマットは [Keep a Changelog](https://keepachangelog.com/ja/1.1.0/) に基づいており、
 [Semantic Versioning](https://semver.org/lang/ja/) に準拠しています。
 
+## [0.1.1] - 2026-04-10
+
+### 改善
+
+- ルーレット未入力時の案内テキストの文字色を白系に統一
+- テキストエリアのフォーカス時ボーダーを白系に変更
+
 ## [0.1.0] - 2026-04-10
 
 ### 改善

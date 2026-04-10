@@ -65,7 +65,7 @@ export function NameInput({
             'w-full h-[480px] p-4 text-base leading-relaxed',
             'border-2 border-white/30 rounded-xl',
             'bg-white/5 text-white resize-none outline-none',
-            'focus:border-purple-start',
+            'focus:border-white/60',
             'disabled:opacity-60 disabled:cursor-not-allowed'
           )}
           style={{ fontFamily: textareaFont }}
