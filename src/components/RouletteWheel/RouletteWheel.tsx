@@ -172,9 +172,11 @@ export function RouletteWheel({
     )
   }
 
-  const radius = 150
+  const radius = 135
   const centerX = 160
   const centerY = 160
+  const outerRimRadius = 152
+  const studCount = 36
 
   return (
     <div
@@ -194,24 +196,114 @@ export function RouletteWheel({
       >
         <defs>
           <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="4" stdDeviation="8" floodOpacity="0.3" />
+            <feDropShadow dx="0" dy="6" stdDeviation="10" floodOpacity="0.4" />
           </filter>
           <filter
             id="center-shadow"
-            x="132"
-            y="132"
-            width="56"
-            height="56"
+            x="120"
+            y="120"
+            width="80"
+            height="80"
             filterUnits="userSpaceOnUse"
           >
-            <feDropShadow dx="0" dy="3" stdDeviation="4" floodOpacity="0.25" />
+            <feDropShadow dx="0" dy="2" stdDeviation="4" floodOpacity="0.4" />
           </filter>
+          <filter id="pointer-shadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.5" />
+          </filter>
+
+          {/* Gold rim gradient */}
+          <linearGradient id="rim-gradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#FFF8DC" />
+            <stop offset="30%" stopColor="#FFD700" />
+            <stop offset="50%" stopColor="#FFC107" />
+            <stop offset="70%" stopColor="#FFD700" />
+            <stop offset="100%" stopColor="#B8860B" />
+          </linearGradient>
+
+          {/* Stud gradient */}
+          <radialGradient id="stud-gradient">
+            <stop offset="0%" stopColor="#FFF8DC" />
+            <stop offset="50%" stopColor="#FFD700" />
+            <stop offset="100%" stopColor="#B8860B" />
+          </radialGradient>
+
+          {/* Center hub gradient */}
+          <linearGradient id="center-gradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#FFF8DC" />
+            <stop offset="50%" stopColor="#FFD700" />
+            <stop offset="100%" stopColor="#B8860B" />
+          </linearGradient>
+
+          {/* Center gem gradient */}
+          <linearGradient id="gem-gradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#FF6B6B" />
+            <stop offset="100%" stopColor="#C62828" />
+          </linearGradient>
+
+          {/* Pointer gradient */}
+          <linearGradient id="pointer-gradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#FFF8DC" />
+            <stop offset="40%" stopColor="#FFD700" />
+            <stop offset="100%" stopColor="#B8860B" />
+          </linearGradient>
+
+          {/* Glossy overlay for segments */}
+          <radialGradient id="gloss-overlay" cx="50%" cy="30%" r="70%">
+            <stop offset="0%" stopColor="white" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="white" stopOpacity="0" />
+          </radialGradient>
+
         </defs>
 
-        <g
-          transform={`rotate(${rotation}, ${centerX}, ${centerY})`}
+        {/* Outer gold rim */}
+        <circle
+          cx={centerX}
+          cy={centerY}
+          r={outerRimRadius}
+          fill="none"
+          stroke="url(#rim-gradient)"
+          strokeWidth="14"
           filter="url(#shadow)"
-        >
+        />
+
+        {/* Inner rim highlight */}
+        <circle
+          cx={centerX}
+          cy={centerY}
+          r={outerRimRadius - 7}
+          fill="none"
+          stroke="#B8860B"
+          strokeWidth="1"
+        />
+        <circle
+          cx={centerX}
+          cy={centerY}
+          r={outerRimRadius + 7}
+          fill="none"
+          stroke="#B8860B"
+          strokeWidth="1"
+        />
+
+        {/* Decorative studs */}
+        {Array.from({ length: studCount }).map((_, i) => {
+          const angle = (i * 360) / studCount
+          const rad = (angle * Math.PI) / 180
+          const sx = centerX + outerRimRadius * Math.cos(rad)
+          const sy = centerY + outerRimRadius * Math.sin(rad)
+          return (
+            <circle
+              key={`stud-${i}`}
+              cx={sx}
+              cy={sy}
+              r="2.5"
+              fill="url(#stud-gradient)"
+            />
+          )
+        })}
+
+        {/* Wheel segments */}
+        <g transform={`rotate(${rotation}, ${centerX}, ${centerY})`}>
           {items.map((item, index) => {
             const startAngle = startAngles[index]
             const segmentAngle = segmentAngles[index]
@@ -251,8 +343,8 @@ export function RouletteWheel({
                 <path
                   d={pathD}
                   fill={COLORS[index % COLORS.length]}
-                  stroke="#fff"
-                  strokeWidth="2"
+                  stroke="rgba(255,255,255,0.4)"
+                  strokeWidth="1.5"
                 />
                 {showText && (
                   <text
@@ -266,7 +358,14 @@ export function RouletteWheel({
                     textAnchor="middle"
                     dominantBaseline="middle"
                     transform={`rotate(${textRotation}, ${textX}, ${textY})`}
-                    style={{ userSelect: 'none', pointerEvents: 'none' }}
+                    style={{
+                      userSelect: 'none',
+                      pointerEvents: 'none',
+                      textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                    }}
+                    stroke="rgba(0,0,0,0.3)"
+                    strokeWidth="0.5"
+                    paintOrder="stroke"
                   >
                     {displayLabel}
                   </text>
@@ -274,23 +373,61 @@ export function RouletteWheel({
               </g>
             )
           })}
-        </g>
 
-        <g>
+          {/* Glossy highlight overlay */}
           <circle
             cx={centerX}
             cy={centerY}
-            r="20"
-            fill="#fff"
-            stroke="#ddd"
-            strokeWidth="2"
-            filter="url(#center-shadow)"
+            r={radius}
+            fill="url(#gloss-overlay)"
+            style={{ pointerEvents: 'none' }}
           />
+        </g>
+
+        {/* Center hub */}
+        <g filter="url(#center-shadow)">
+          {/* Outer ring */}
+          <circle
+            cx={centerX}
+            cy={centerY}
+            r="24"
+            fill="url(#center-gradient)"
+            stroke="#B8860B"
+            strokeWidth="1.5"
+          />
+          {/* Inner ring */}
+          <circle
+            cx={centerX}
+            cy={centerY}
+            r="18"
+            fill="none"
+            stroke="rgba(255,248,220,0.5)"
+            strokeWidth="1"
+          />
+          {/* Center gem */}
+          <circle
+            cx={centerX}
+            cy={centerY}
+            r="10"
+            fill="url(#gem-gradient)"
+            stroke="#B8860B"
+            strokeWidth="1"
+          />
+        </g>
+
+        {/* Pointer / indicator */}
+        <g filter="url(#pointer-shadow)">
           <path
-            d="M 145 6 L 175 6 L 160 39 Z"
-            fill="#FFD700"
-            stroke="#FFA000"
-            strokeWidth="2"
+            d="M 148 2 L 172 2 L 160 40 Z"
+            fill="url(#pointer-gradient)"
+            stroke="#B8860B"
+            strokeWidth="1.5"
+            strokeLinejoin="round"
+          />
+          {/* Pointer highlight */}
+          <path
+            d="M 153 6 L 165 6 L 160 30 Z"
+            fill="rgba(255,255,255,0.25)"
           />
         </g>
       </svg>

@@ -42,7 +42,7 @@ export function NameInput({
   return (
     <div className="w-full">
       <div className="mb-2.5 flex items-center justify-between">
-        <label htmlFor={textareaId} className="text-base text-gray-400">
+        <label htmlFor={textareaId} className="text-base text-white/80">
           参加者（改行区切り）
         </label>
         {onShuffle && (
@@ -63,7 +63,7 @@ export function NameInput({
           id={textareaId}
           className={cn(
             'w-full h-[480px] p-4 text-base leading-relaxed',
-            'border-2 border-gray-700 rounded-xl',
+            'border-2 border-white/30 rounded-xl',
             'bg-white/5 text-white resize-none outline-none',
             'focus:border-purple-start',
             'disabled:opacity-60 disabled:cursor-not-allowed'
@@ -92,7 +92,7 @@ export function NameInput({
                 <div key={i} className="whitespace-pre-wrap break-words">
                   <span className="invisible">{line || '\u00A0'}</span>
                   {line.trim() && (
-                    <span className="visible text-gray-400"> さん</span>
+                    <span className="visible text-white/60"> さん</span>
                   )}
                 </div>
               ))}
@@ -101,7 +101,7 @@ export function NameInput({
         )}
       </div>
       <div className="mt-2 flex justify-end">
-        <span className="text-gray-500 text-sm">参加者: {count}名</span>
+        <span className="text-white/60 text-sm">参加者: {count}名</span>
       </div>
     </div>
   )

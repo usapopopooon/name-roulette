@@ -33,7 +33,7 @@ export function ConfirmDialog({ message, onYes, onNo }: ConfirmDialogProps) {
         aria-modal="true"
         aria-label="確認ダイアログ"
         tabIndex={-1}
-        className="text-center p-8 rounded-2xl bg-gradient-to-br from-dark-secondary/90 to-dark-tertiary/90 border-2 border-gold/30 shadow-[0_0_40px_rgba(255,215,0,0.2)]"
+        className="text-center p-8 rounded-2xl bg-[#2a1508]/95 border-2 border-gold/40 shadow-[0_0_40px_rgba(255,215,0,0.15)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="text-xl text-white mb-6 whitespace-pre-line">
@@ -50,7 +50,7 @@ export function ConfirmDialog({ message, onYes, onNo }: ConfirmDialogProps) {
           <button
             type="button"
             onClick={onNo}
-            className="px-8 py-3 text-lg font-semibold rounded-full bg-gray-500/20 text-gray-300 border-2 border-gray-500/50 hover:bg-gray-500/30 transition-all duration-300 cursor-pointer"
+            className="px-8 py-3 text-lg font-semibold rounded-full bg-white/10 text-white/80 border-2 border-white/30 hover:bg-white/15 transition-all duration-300 cursor-pointer"
           >
             いいえ
           </button>

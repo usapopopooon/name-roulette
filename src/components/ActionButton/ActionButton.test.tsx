@@ -35,7 +35,7 @@ describe('ActionButton', () => {
     const { container } = render(<ActionButton>Primary</ActionButton>)
 
     const button = container.querySelector('button')
-    expect(button?.className).toContain('from-orange-start')
+    expect(button?.className).toContain('from-gold')
   })
 
   it('should apply secondary variant styles', () => {

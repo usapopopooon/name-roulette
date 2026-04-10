@@ -76,7 +76,7 @@ describe('RouletteWheel', () => {
     )
 
     const paths = container.querySelectorAll('path')
-    expect(paths.length).toBe(wheelItems.length + 1)
+    expect(paths.length).toBe(wheelItems.length + 2)
   })
 
   it('should render all item names as text', () => {

@@ -75,7 +75,7 @@ export function ResultDisplay({
           aria-modal="true"
           aria-label="抽選結果"
           tabIndex={-1}
-          className="text-center p-10 rounded-3xl bg-gradient-to-br from-dark-secondary/90 to-dark-tertiary/90 border-2 border-gold/30 shadow-[0_0_60px_rgba(255,215,0,0.3)]"
+          className="text-center p-10 rounded-3xl bg-[#2a1508]/95 border-2 border-gold/40 shadow-[0_0_60px_rgba(255,215,0,0.25)]"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="text-2xl text-gold mb-4">🎉 当選者 🎉</div>

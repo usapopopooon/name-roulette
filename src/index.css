@@ -1,5 +1,42 @@
 @import 'tailwindcss';
 
+@utility bg-wood-grain {
+  background-color: #3e2013;
+  background-image:
+    repeating-linear-gradient(
+      95deg,
+      transparent,
+      transparent 18px,
+      rgba(0, 0, 0, 0.06) 18px,
+      rgba(0, 0, 0, 0.06) 20px
+    ),
+    repeating-linear-gradient(
+      92deg,
+      transparent,
+      transparent 40px,
+      rgba(255, 200, 120, 0.04) 40px,
+      rgba(255, 200, 120, 0.04) 42px
+    ),
+    repeating-linear-gradient(
+      88deg,
+      transparent,
+      transparent 60px,
+      rgba(0, 0, 0, 0.05) 60px,
+      rgba(0, 0, 0, 0.05) 63px
+    ),
+    linear-gradient(
+      180deg,
+      #4a2a15 0%,
+      #3e2013 15%,
+      #5a3520 30%,
+      #3e2013 45%,
+      #4e2c18 60%,
+      #3a1c10 75%,
+      #4a2a15 90%,
+      #3e2013 100%
+    );
+}
+
 @theme {
   --color-dark-primary: #1a1a2e;
   --color-dark-secondary: #16213e;

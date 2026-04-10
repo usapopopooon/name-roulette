@@ -96,20 +96,20 @@ export function ManualDialog({ onClose }: ManualDialogProps) {
         aria-modal="true"
         aria-label="使い方"
         tabIndex={-1}
-        className="relative max-w-lg w-[90vw] max-h-[80vh] overflow-y-auto p-8 rounded-2xl bg-gradient-to-br from-dark-secondary/95 to-dark-tertiary/95 border-2 border-purple-start/30 shadow-[0_0_40px_rgba(102,126,234,0.2)]"
+        className="relative max-w-lg w-[90vw] max-h-[80vh] overflow-y-auto p-8 rounded-2xl bg-[#2a1508]/95 border-2 border-gold/40 shadow-[0_0_40px_rgba(255,215,0,0.15),inset_0_1px_0_rgba(255,255,255,0.05)]"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl leading-none cursor-pointer transition-colors"
+          className="absolute top-4 right-4 text-white/50 hover:text-white text-2xl leading-none cursor-pointer transition-colors"
           aria-label="閉じる"
         >
           &times;
         </button>
 
-        <h2 className="flex items-center gap-2 text-2xl font-bold text-white mb-6">
-          <span className="inline-flex items-center justify-center w-7 h-7 rounded-full border-2 border-current text-base font-bold leading-none">
+        <h2 className="flex items-center gap-2 text-2xl font-bold text-gold mb-6 [text-shadow:0_0_12px_rgba(255,215,0,0.3)]">
+          <span className="inline-flex items-center justify-center w-7 h-7 rounded-full border-2 border-gold/60 text-base font-bold leading-none">
             ?
           </span>
           使い方
@@ -118,10 +118,10 @@ export function ManualDialog({ onClose }: ManualDialogProps) {
         <div className="space-y-5">
           {sections.map((section) => (
             <div key={section.title}>
-              <h3 className="text-base font-semibold text-purple-start mb-1.5">
+              <h3 className="text-base font-semibold text-gold-dark mb-1.5">
                 {section.title}
               </h3>
-              <ul className="space-y-1 text-sm text-gray-300">
+              <ul className="space-y-1 text-sm text-white/80">
                 {section.items.map((item, i) => (
                   <li
                     key={i}

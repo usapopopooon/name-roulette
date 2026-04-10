@@ -8,17 +8,17 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary: [
-          'bg-gradient-to-br from-orange-start to-orange-end text-white',
-          'shadow-[0_5px_20px_rgba(245,175,25,0.4)]',
-          'hover:enabled:-translate-y-0.5 hover:enabled:shadow-[0_7px_25px_rgba(245,175,25,0.5)]',
+          'bg-gradient-to-b from-gold to-gold-dark text-[#3e2013]',
+          'shadow-[0_5px_20px_rgba(255,215,0,0.3)]',
+          'hover:enabled:-translate-y-0.5 hover:enabled:shadow-[0_7px_25px_rgba(255,215,0,0.4)]',
         ],
         secondary: [
-          'bg-white/10 text-gray-400 border-2 border-gray-600',
-          'hover:enabled:bg-white/15 hover:enabled:border-gray-500',
+          'bg-white/10 text-white/80 border-2 border-white/30',
+          'hover:enabled:bg-white/15 hover:enabled:border-white/50',
         ],
         accent: [
-          'bg-emerald-900/50 text-emerald-200 border-2 border-emerald-800',
-          'hover:enabled:bg-emerald-800/50 hover:enabled:border-emerald-700',
+          'bg-gold/10 text-gold border-2 border-gold/30',
+          'hover:enabled:bg-gold/20 hover:enabled:border-gold/50',
         ],
       },
       size: {
