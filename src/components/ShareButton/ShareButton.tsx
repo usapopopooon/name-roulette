@@ -26,7 +26,8 @@ export function ShareButton({ onCopy }: ShareButtonProps) {
           copied
             ? 'bg-gradient-to-b from-gold to-gold-dark text-[#2a1508] shadow-[0_4px_15px_rgba(255,215,0,0.3)]'
             : 'bg-white/10 border-2 border-white/30 shadow-[0_4px_15px_rgba(255,255,255,0.05)]',
-          !copied && 'hover:-translate-y-0.5 hover:bg-white/15 hover:border-white/50'
+          !copied &&
+            'hover:-translate-y-0.5 hover:bg-white/15 hover:border-white/50'
         )}
         onClick={handleClick}
       >

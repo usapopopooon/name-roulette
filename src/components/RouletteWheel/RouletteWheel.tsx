@@ -208,7 +208,13 @@ export function RouletteWheel({
           >
             <feDropShadow dx="0" dy="2" stdDeviation="4" floodOpacity="0.4" />
           </filter>
-          <filter id="pointer-shadow" x="-50%" y="-50%" width="200%" height="200%">
+          <filter
+            id="pointer-shadow"
+            x="-50%"
+            y="-50%"
+            width="200%"
+            height="200%"
+          >
             <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.5" />
           </filter>
 
@@ -253,7 +259,6 @@ export function RouletteWheel({
             <stop offset="0%" stopColor="white" stopOpacity="0.2" />
             <stop offset="100%" stopColor="white" stopOpacity="0" />
           </radialGradient>
-
         </defs>
 
         {/* Outer gold rim */}
@@ -425,10 +430,7 @@ export function RouletteWheel({
             strokeLinejoin="round"
           />
           {/* Pointer highlight */}
-          <path
-            d="M 153 6 L 165 6 L 160 30 Z"
-            fill="rgba(255,255,255,0.25)"
-          />
+          <path d="M 153 6 L 165 6 L 160 30 Z" fill="rgba(255,255,255,0.25)" />
         </g>
       </svg>
     </div>
